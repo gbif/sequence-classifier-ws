@@ -1,15 +1,16 @@
 /**
- * Select the single best vsearch match for a query sequence.
+ * Select the top vsearch matches for a query sequence.
  *
  * @param {string} queryId - The nucleotideSequenceID of the query.
  * @param {object[]} matches - Ranked list of vsearch match objects.
  * @param {import('./assignTaxonomyToOccurrence.mjs').OccurrenceContext} [context]
  *   Optional occurrence-level context (location, gbifID) for context-sensitive
  *   ranking — e.g. geographic plausibility of a proposed species identification.
- * @returns {object|null}
+ * @param {number} [topN=5] - Maximum number of matches to return.
+ * @returns {object[]} Up to topN matches, best first. Empty array if no matches.
  */
-export function pickBestMatch(queryId, matches, context) {
-  // TODO: implement ranking logic using identity, query coverage, reference
-  // dataset priority, and optionally occurrence context (e.g. coordinates).
-  return matches[0] ?? null;
+export function pickBestMatch(queryId, matches, context, topN = 5) {
+  return [...matches]
+    .sort((a, b) => (b.identity - a.identity) || (b.qcovs - a.qcovs))
+    .slice(0, topN);
 }

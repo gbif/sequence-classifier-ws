@@ -208,6 +208,22 @@ app.post('/search/batch', async (req, res) => {
   res.json(result);
 });
 
+// ── shared vsearch helper ─────────────────────────────────────────────────────
+
+async function vsearchQuery(fasta) {
+  const vsearchRes = await fetch(`${VSEARCH_URL}?outfmt=blast6out`, {
+    method: 'POST',
+    body: fasta,
+    headers: { 'Content-Type': 'text/plain' },
+  });
+  if (!vsearchRes.ok) {
+    const text = await vsearchRes.text();
+    throw new Error(`vsearch error ${vsearchRes.status}: ${text}`);
+  }
+  const text = await vsearchRes.text();
+  return parseBlast6out(text, parseFasta(fasta));
+}
+
 // ── POST /occurrence/classify ─────────────────────────────────────────────────
 //
 // Accept a single GBIF occurrence object (JSON), extract its nucleotide
@@ -215,8 +231,6 @@ app.post('/search/batch', async (req, res) => {
 // GBIF pipeline can feed to the taxon-matching service.
 //
 // Request body: a GBIF occurrence object (Content-Type: application/json).
-//   The occurrence is expected to carry DNA sequence data — see
-//   extractSequences() in assignTaxonomyToOccurrence.mjs for the expected shape.
 //
 // Response (200):
 //   { scientificName, taxonRank, [kingdom, phylum, class, order, family, genus, species], remarks }
@@ -232,27 +246,9 @@ app.post('/occurrence/classify', async (req, res) => {
     return res.status(400).json({ error: 'Request body must be a JSON occurrence object' });
   }
 
-  // searchSequences is injected here so assignTaxonomyToOccurrence stays
-  // independent of the HTTP layer and is easier to test.
-  // It accepts a FASTA string and returns { [nucleotideSequenceID]: [matches] }.
-  async function searchSequences(fasta) {
-    const vsearchRes = await fetch(`${VSEARCH_URL}?outfmt=blast6out`, {
-      method: 'POST',
-      body: fasta,
-      headers: { 'Content-Type': 'text/plain' },
-    });
-    if (!vsearchRes.ok) {
-      const text = await vsearchRes.text();
-      throw new Error(`vsearch error ${vsearchRes.status}: ${text}`);
-    }
-    const text = await vsearchRes.text();
-    const sequences = parseFasta(fasta);
-    return parseBlast6out(text, sequences);
-  }
-
   let classification;
   try {
-    classification = await assignTaxonomyToOccurrence(occurrence, searchSequences);
+    classification = await assignTaxonomyToOccurrence(occurrence, vsearchQuery);
   } catch (err) {
     console.error('Classification error:', err.message);
     return res.status(502).json({ error: 'Classification failed', details: err.message });
@@ -263,6 +259,71 @@ app.post('/occurrence/classify', async (req, res) => {
   }
 
   res.json(classification);
+});
+
+// ── POST /occurrence/classify/batch ──────────────────────────────────────────
+//
+// Accept an array of GBIF occurrence objects, classify all of them in a single
+// vsearch round-trip by deduplicating sequences across occurrences before
+// querying, then fanning results back to each occurrence.
+//
+// Request body: occurrence[] (Content-Type: application/json).
+//
+// Response (200): array of result objects, one per input occurrence, in order:
+//   { gbifID, classification }
+//   classification is null if the occurrence had no sequences or no matches.
+//
+// Response (400): malformed request body.
+//
+app.post('/occurrence/classify/batch', async (req, res) => {
+  const occurrences = req.body;
+
+  if (!Array.isArray(occurrences)) {
+    return res.status(400).json({ error: 'Request body must be an array of occurrence objects' });
+  }
+
+  // Collect unique sequences across all occurrences.
+  const seqMap = new Map(); // nucleotideSequenceID → sequence string
+  for (const occ of occurrences) {
+    const entries = occ.nucleotideSequence;
+    if (!Array.isArray(entries)) continue;
+    for (const { nucleotideSequenceID, sequence, invalid } of entries) {
+      if (sequence && !invalid && !seqMap.has(nucleotideSequenceID)) {
+        seqMap.set(nucleotideSequenceID, sequence);
+      }
+    }
+  }
+
+  // Single vsearch call covering all unique sequences.
+  let matchesMap = {};
+  if (seqMap.size > 0) {
+    const fasta = [...seqMap.entries()].map(([id, seq]) => `>${id}\n${seq}`).join('\n');
+    try {
+      matchesMap = await vsearchQuery(fasta);
+    } catch (err) {
+      console.error('Batch vsearch error:', err.message);
+      return res.status(502).json({ error: 'Could not reach vsearch server', details: err.message });
+    }
+  }
+
+  // For each occurrence, inject a lookup-based searchSequences so
+  // assignTaxonomyToOccurrence resolves from the cached matchesMap.
+  const results = await Promise.all(
+    occurrences.map(async (occurrence) => {
+      async function searchSequences(fasta) {
+        const ids = Object.keys(parseFasta(fasta));
+        return Object.fromEntries(ids.map(id => [id, matchesMap[id] ?? []]));
+      }
+      try {
+        const classification = await assignTaxonomyToOccurrence(occurrence, searchSequences);
+        return { gbifID: occurrence.gbifID ?? null, classification };
+      } catch (err) {
+        return { gbifID: occurrence.gbifID ?? null, classification: null, error: err.message };
+      }
+    })
+  );
+
+  res.json(results);
 });
 
 app.listen(PORT, () => {

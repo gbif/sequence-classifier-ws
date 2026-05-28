@@ -41,7 +41,7 @@ export async function assignTaxonomyToOccurrence(occurrence, searchSequences) {
   const allMatches = await searchSequences(fasta);
   // allMatches: { [nucleotideSequenceID]: [match, ...] }
 
-  // 3. For each sequence, pick the single best match.
+  // 3. For each sequence, pick the top matches (up to 5).
   //    Pass occurrence context (location etc.) so pickBestMatch can use it
   //    for geographic plausibility checks or other context-sensitive ranking.
   const occurrenceContext = extractContext(occurrence);
@@ -49,10 +49,10 @@ export async function assignTaxonomyToOccurrence(occurrence, searchSequences) {
   const bestMatches = sequences
     .map(({ nucleotideSequenceID }) => {
       const matches = allMatches[nucleotideSequenceID] ?? [];
-      const best = pickBestMatch(nucleotideSequenceID, matches, occurrenceContext);
-      return { nucleotideSequenceID, best };
+      const topMatches = pickBestMatch(nucleotideSequenceID, matches, occurrenceContext);
+      return { nucleotideSequenceID, topMatches };
     })
-    .filter(({ best }) => best !== null);
+    .filter(({ topMatches }) => topMatches.length > 0);
 
   if (bestMatches.length === 0) {
     return null;
@@ -124,10 +124,10 @@ function buildFasta(sequences) {
 }
 
 /**
- * Compile a single DnaClassification from one or more per-sequence best matches.
+ * Compile a single DnaClassification from one or more per-sequence top-match lists.
  *
  * When there is only one sequence, the classification is taken directly from its
- * best match. When there are multiple sequences, a reconciliation strategy is
+ * top match. When there are multiple sequences, a reconciliation strategy is
  * needed — for example, prefer the match with the highest identity, or take the
  * lowest-common-ancestor across all matches.
  *
@@ -136,14 +136,16 @@ function buildFasta(sequences) {
  *   - the reference dataset, target gene, identity, and query coverage for each match
  *   - which reconciliation rule was applied when multiple sequences were present
  *
- * @param {{ nucleotideSequenceID: string, best: object }[]} bestMatches
+ * @param {{ nucleotideSequenceID: string, topMatches: object[] }[]} bestMatches
  * @param {object} occurrence - Original occurrence, for provenance context.
  * @returns {DnaClassification}
  */
 function compileClassification(bestMatches, occurrence) {
-  const { nucleotideSequenceID, best } = bestMatches.reduce(
-    (a, b) => (b.best.identity > a.best.identity ? b : a)
+  // Select the sequence whose top match has the highest identity.
+  const { nucleotideSequenceID, topMatches } = bestMatches.reduce(
+    (a, b) => (b.topMatches[0].identity > a.topMatches[0].identity ? b : a)
   );
+  const best = topMatches[0];
 
   const cls = {
     scientificName: best.scientificName,
@@ -154,10 +156,10 @@ function compileClassification(bestMatches, occurrence) {
     if (best[rank]) cls[rank] = best[rank];
   }
 
-  const seqCount  = bestMatches.length;
+  const seqCount = bestMatches.length;
   const remarksSeqs = bestMatches
-    .map(({ nucleotideSequenceID: id, best: m }) =>
-      `${id}: dataset=${m.dataset} gene=${m.targetGene} identity=${m.identity} qcovs=${m.qcovs}`)
+    .map(({ nucleotideSequenceID: id, topMatches: ms }) =>
+      `${id}: dataset=${ms[0].dataset} gene=${ms[0].targetGene} identity=${ms[0].identity} qcovs=${ms[0].qcovs}`)
     .join('; ');
 
   cls.remarks = `${seqCount} sequence(s) matched; selected highest identity (${best.identity}%) ` +
