@@ -1,0 +1,1441 @@
+[
+  {
+    "key": 683112287,
+    "datasetKey": "040c5662-da76-4782-a48e-cdea1892d14c",
+    "publishingOrgKey": "b3bf3a83-1f68-4541-a03f-330d30d567f5",
+    "installationKey": "fb5e4c2a-579c-434b-a446-3a665dd732ad",
+    "hostingOrganizationKey": "fbca90e3-8aed-48b1-84e3-369afbd000ce",
+    "publishingCountry": "ZZ",
+    "protocol": "DWC_ARCHIVE",
+    "lastCrawled": "2026-05-15T08:08:23.873+00:00",
+    "lastParsed": "2026-05-18T10:32:35.803+00:00",
+    "crawlId": 179,
+    "extensions": {
+      "http://rs.gbif.org/terms/1.0/DNADerivedData": [
+        {
+          "https://w3id.org/mixs/0000044": "ITS2",
+          "http://rs.gbif.org/terms/dna_sequence": "TGCAGAATCCCGTGAACCATCGAGTTTTTGAACGCAAGTTGCGCCCGAAGCTTTTAG-CTGAGGGCACGTCTGCCTGGGCGTCACGCATCGCGTCTCCCCCAAATCCACC-CCGAGTGGAGGGGAAGGAGGA-TGGTCTC-C-CGTGG-CTCACCG-GC-CGCGGCTGGCCTAAAATCGGAGCCCTCG-GCATCG-GGATGTCGCGGCGATAGGTGG--T-G-AACAA-GGCTTAG-GCCAAG-CAAG---CAACCC-GTC-GCGCG-TC-GC-TGTGCC-A-AT-G-TGAGCTCGA-AG-GAC-CCT-TT-GA-TGTTGCCTTGTTGC-AACCAAACCGTTGCGACCCCAGGTCAGGCGGGGCTACCCGC-TGAATTTAAGC-A-TATCAATAAGCGGA-GGAAAAGAAACTTAC-AAGGATTCCCCTAGTAACGGCGAGCGAACCG-GGAATAGCCCAGCTTTAAAATCGGGCGGCTTTGCCTTCCGA"
+        },
+        {
+          "https://w3id.org/mixs/0000044": "rbcL",
+          "http://rs.gbif.org/terms/dna_sequence": "AAGTGTTGGATTTAAAGCTGGTGTTAAAGATTACAAATTGACTTATTATACTCCTGAGTATGAAACCCTAGATACTGATATCTTGGCAGCATTCCGAGTAAGTCCTCAACCCGGAGTTCCACCCGAAGAAGCAGGGGCTGCAGTAGCCGCCGAGTCTTCTACGGGTACATGGACAACTGTATGGACCGACGGACTTACCAGTCTTGATCGTTACAAAGGACGATGCTACCACATCGAGCCTGTTGCTGGAGAAGAAAATCAATATATTTGTTATGTAGCGTACCCCTTAGACCTTTTTGAGGAAGGCTCTGTTACTAACATGTTTACGTCCATTGTGGGTAATGTATTTGGGTTCAAAGCCTTGCGTGCTCTACGTTTGGAGGATTTGCGAATCCCTGTTGCTTATGTAAAAACTTTCCTAGGCCCGCCTCACGGTATCCAAGTTGAAAGAGATAAATTGAACAAGTATGGCCGTCCCCTATTGGGATGCACTATTAAACCTAAATTGGGGTTATCTGCTAAAAACTATGGCCGAGCAGTTTATGAATGTCTTCGCGGTGGACTTGATTTTACCAAAGATGATGAAAACGTGAACTCCCAACCATTT"
+        }
+      ]
+    },
+    "basisOfRecord": "MATERIAL_SAMPLE",
+    "occurrenceStatus": "PRESENT",
+    "classifications": {
+      "7ddf754f-d193-4cc9-b351-99906754a03b": {
+        "usage": {
+          "key": "644QW",
+          "name": "Silene L.",
+          "rank": "GENUS",
+          "code": "BOTANICAL",
+          "authorship": "L.",
+          "formattedName": "<i>Silene</i> L."
+        },
+        "acceptedUsage": {
+          "key": "644QW",
+          "name": "Silene L.",
+          "rank": "GENUS",
+          "code": "BOTANICAL",
+          "authorship": "L.",
+          "formattedName": "<i>Silene</i> L."
+        },
+        "taxonomicStatus": "ACCEPTED",
+        "classification": [
+          {
+            "key": "CS5HF",
+            "name": "Eukaryota",
+            "rank": "DOMAIN"
+          },
+          {
+            "key": "P",
+            "name": "Plantae",
+            "rank": "KINGDOM"
+          },
+          {
+            "key": "CMQ8S",
+            "name": "Pteridobiotina",
+            "rank": "SUBKINGDOM"
+          },
+          {
+            "key": "TP",
+            "name": "Tracheophyta",
+            "rank": "PHYLUM"
+          },
+          {
+            "key": "MG",
+            "name": "Magnoliopsida",
+            "rank": "CLASS"
+          },
+          {
+            "key": "VW",
+            "name": "Caryophyllales",
+            "rank": "ORDER"
+          },
+          {
+            "key": "7RZ",
+            "name": "Caryophyllaceae",
+            "rank": "FAMILY"
+          },
+          {
+            "key": "KVT6S",
+            "name": "Sileneae",
+            "rank": "TRIBE"
+          },
+          {
+            "key": "644QW",
+            "name": "Silene",
+            "rank": "GENUS"
+          }
+        ],
+        "issues": []
+      },
+      "d7dddbf4-2cf0-4f39-9b2a-bb099caae36c": {
+        "usage": {
+          "key": "3085897",
+          "name": "Silene L.",
+          "rank": "GENUS",
+          "authorship": "L.",
+          "formattedName": "<i>Silene</i> L."
+        },
+        "acceptedUsage": {
+          "key": "3085897",
+          "name": "Silene L.",
+          "rank": "GENUS",
+          "authorship": "L.",
+          "formattedName": "<i>Silene</i> L."
+        },
+        "taxonomicStatus": "ACCEPTED",
+        "classification": [
+          {
+            "key": "6",
+            "name": "Plantae",
+            "rank": "KINGDOM"
+          },
+          {
+            "key": "7707728",
+            "name": "Tracheophyta",
+            "rank": "PHYLUM"
+          },
+          {
+            "key": "220",
+            "name": "Magnoliopsida",
+            "rank": "CLASS"
+          },
+          {
+            "key": "422",
+            "name": "Caryophyllales",
+            "rank": "ORDER"
+          },
+          {
+            "key": "2518",
+            "name": "Caryophyllaceae",
+            "rank": "FAMILY"
+          },
+          {
+            "key": "3085897",
+            "name": "Silene",
+            "rank": "GENUS"
+          }
+        ],
+        "issues": [
+          "TAXON_MATCH_HIGHERRANK"
+        ]
+      }
+    },
+    "taxonKey": 3085897,
+    "kingdomKey": 6,
+    "phylumKey": 7707728,
+    "classKey": 220,
+    "orderKey": 422,
+    "familyKey": 2518,
+    "genusKey": 3085897,
+    "acceptedTaxonKey": 3085897,
+    "scientificName": "Silene L.",
+    "scientificNameAuthorship": "L.",
+    "acceptedScientificName": "Silene L.",
+    "kingdom": "Plantae",
+    "phylum": "Tracheophyta",
+    "order": "Caryophyllales",
+    "family": "Caryophyllaceae",
+    "genus": "Silene",
+    "taxonRank": "GENUS",
+    "taxonomicStatus": "ACCEPTED",
+    "decimalLatitude": 51.48243,
+    "decimalLongitude": -0.28771,
+    "continent": "EUROPE",
+    "stateProvince": "England",
+    "gadm": {
+      "level0": {
+        "gid": "GBR",
+        "name": "United Kingdom"
+      },
+      "level1": {
+        "gid": "GBR.1_1",
+        "name": "England"
+      },
+      "level2": {
+        "gid": "GBR.1.36_1",
+        "name": "Greater London"
+      },
+      "level3": {
+        "gid": "GBR.1.36.27_1",
+        "name": "Richmond upon Thames"
+      }
+    },
+    "year": 2024,
+    "month": 1,
+    "day": 25,
+    "eventDate": "2024-01-25",
+    "startDayOfYear": 25,
+    "endDayOfYear": 25,
+    "issues": [
+      "GEODETIC_DATUM_ASSUMED_WGS84",
+      "COUNTRY_DERIVED_FROM_COORDINATES",
+      "CONTINENT_DERIVED_FROM_COORDINATES",
+      "TAXON_MATCH_HIGHERRANK",
+      "INSTITUTION_MATCH_NONE"
+    ],
+    "lastInterpreted": "2026-05-18T10:32:35.803+00:00",
+    "references": "https://boldsystems.org/index.php/Public_RecordView?processid=EDTOL1810-24",
+    "license": "http://creativecommons.org/licenses/by/4.0/legalcode",
+    "isSequenced": true,
+    "identifiers": [
+      {
+        "identifier": "EDTOL1810-24"
+      }
+    ],
+    "media": [],
+    "facts": [],
+    "relations": [],
+    "isInCluster": false,
+    "recordedBy": "Jose Ignacio Marquez-Corro",
+    "identifiedBy": "Alice Livingstone",
+    "dnaSequenceID": [
+      "01780c5ca6a8f096e2827f509f41e33d",
+      "07e6e65fbe1a27e97109dfc607d6c63f"
+    ],
+    "nucleotideSequence": [
+      {
+        "nucleotideSequenceID": "01780c5ca6a8f096e2827f509f41e33d",
+        "targetGene": "ITS2",
+        "sequence": "TGCAGAATCCCGTGAACCATCGAGTTTTTGAACGCAAGTTGCGCCCGAAGCTTTTAGCTGAGGGCACGTCTGCCTGGGCGTCACGCATCGCGTCTCCCCCAAATCCACCCCGAGTGGAGGGGAAGGAGGATGGTCTCCCGTGGCTCACCGGCCGCGGCTGGCCTAAAATCGGAGCCCTCGGCATCGGGATGTCGCGGCGATAGGTGGTGAACAAGGCTTAGGCCAAGCAAGCAACCCGTCGCGCGTCGCTGTGCCAATGTGAGCTCGAAGGACCCTTTGATGTTGCCTTGTTGCAACCAAACCGTTGCGACCCCAGGTCAGGCGGGGCTACCCGCTGAATTTAAGCATATCAATAAGCGGAGGAAAAGAAACTTACAAGGATTCCCCTAGTAACGGCGAGCGAACCGGGAATAGCCCAGCTTTAAAATCGGGCGGCTTTGCCTTCCGA",
+        "sequenceLength": 448,
+        "gcContent": 0.5803571428571429,
+        "nonIupacFraction": 0.0,
+        "nonACGTNFraction": 0.0,
+        "naturalLanguageDetected": false,
+        "endsTrimmed": false,
+        "gapsOrWhitespaceRemoved": true,
+        "invalid": false
+      },
+      {
+        "nucleotideSequenceID": "07e6e65fbe1a27e97109dfc607d6c63f",
+        "targetGene": "rbcL",
+        "sequence": "AAGTGTTGGATTTAAAGCTGGTGTTAAAGATTACAAATTGACTTATTATACTCCTGAGTATGAAACCCTAGATACTGATATCTTGGCAGCATTCCGAGTAAGTCCTCAACCCGGAGTTCCACCCGAAGAAGCAGGGGCTGCAGTAGCCGCCGAGTCTTCTACGGGTACATGGACAACTGTATGGACCGACGGACTTACCAGTCTTGATCGTTACAAAGGACGATGCTACCACATCGAGCCTGTTGCTGGAGAAGAAAATCAATATATTTGTTATGTAGCGTACCCCTTAGACCTTTTTGAGGAAGGCTCTGTTACTAACATGTTTACGTCCATTGTGGGTAATGTATTTGGGTTCAAAGCCTTGCGTGCTCTACGTTTGGAGGATTTGCGAATCCCTGTTGCTTATGTAAAAACTTTCCTAGGCCCGCCTCACGGTATCCAAGTTGAAAGAGATAAATTGAACAAGTATGGCCGTCCCCTATTGGGATGCACTATTAAACCTAAATTGGGGTTATCTGCTAAAAACTATGGCCGAGCAGTTTATGAATGTCTTCGCGGTGGACTTGATTTTACCAAAGATGATGAAAACGTGAACTCCCAACCATTT",
+        "sequenceLength": 607,
+        "gcContent": 0.43657331136738053,
+        "nonIupacFraction": 0.0,
+        "nonACGTNFraction": 0.0,
+        "naturalLanguageDetected": false,
+        "endsTrimmed": false,
+        "gapsOrWhitespaceRemoved": false,
+        "invalid": false
+      }
+    ],
+    "geodeticDatum": "WGS84",
+    "class": "Magnoliopsida",
+    "countryCode": "GB",
+    "recordedByIDs": [],
+    "identifiedByIDs": [],
+    "gbifRegion": "EUROPE",
+    "country": "United Kingdom of Great Britain and Northern Ireland",
+    "identifier": "EDTOL1810-24",
+    "disposition": "Vouchered:Registered Collection",
+    "catalogNumber": "K001527313",
+    "habitat": "Cultivated from wild source",
+    "http://unknown.org/crawl_attempt": "179",
+    "institutionCode": "Royal Botanic Gardens, Kew",
+    "locality": "ROYAL BOTANIC GARDENS KEW",
+    "identificationRemarks": "morphology",
+    "fieldNumber": "MC9688",
+    "gbifID": "683112287",
+    "occurrenceRemarks": "KDTOL11079",
+    "occurrenceID": "EDTOL1810-24"
+  },
+  {
+    "key": 683274973,
+    "datasetKey": "040c5662-da76-4782-a48e-cdea1892d14c",
+    "publishingOrgKey": "b3bf3a83-1f68-4541-a03f-330d30d567f5",
+    "installationKey": "fb5e4c2a-579c-434b-a446-3a665dd732ad",
+    "hostingOrganizationKey": "fbca90e3-8aed-48b1-84e3-369afbd000ce",
+    "publishingCountry": "ZZ",
+    "protocol": "DWC_ARCHIVE",
+    "lastCrawled": "2026-05-15T08:08:23.873+00:00",
+    "lastParsed": "2026-05-18T10:32:44.309+00:00",
+    "crawlId": 179,
+    "extensions": {
+      "http://rs.gbif.org/terms/1.0/DNADerivedData": [
+        {
+          "https://w3id.org/mixs/0000044": "ITS2",
+          "http://rs.gbif.org/terms/dna_sequence": "ATATCTTGGCTCTTGCAACGATGAAGAACGCAGCGAAATGCGATACGTAGTGTGAATTGCAGAATTCCGCGAATCATCGAGTTTTTGAACGCAAGTTGCGCCCGAGGCTTGTCCAAGGGCATTTCCGTTAGAGCGTCACCGCGCCCCCCACCAGACTCCCTTCCTTTGTGGCGGAGTTTTGAGTGGAACTGGCCGTCCCGGAGTGCTAAGTACTCGGGTCGGCTGAAATGGAGGGAATTTGGCCGCCGTGGCATCACTTGCCCCGCGATCAGGTGCGATTTCGAACTCCCACGACACTTAGTGTCGTGGGACTTGGGTCTTCCAAGTGCGGGGCTCCCGGTGAGCCCGAGTGCGTGCCCGAGTTCCACAGCAGGCTACCTTTAGGGGCCTTCCACTCGTGGAGGGCACCGTAGTGAGGAAACGAAGAGGTAACGCATCAGACCTCTAATCGGAAAAGACTACCCGCCGAGTTTAA"
+        },
+        {
+          "https://w3id.org/mixs/0000044": "rbcL",
+          "http://rs.gbif.org/terms/dna_sequence": "AGGTGTTGGATTTAAAGCTGGTGTTAAAGATTACAGATTAACTTATTACACTCCAGATTATCAGACTAAAGAAACTGATATTTTAGCAGCATTTCGAATGACTCCTCAACCAGGAGTACCAGCTGAAGAGGCAGGAGCTGCAGTAGCTGCGGAATCTTCCACTGGTACATGGACCACTGTTTGGACTGATGGACTTACTAGTCTTGATCGTTATAAAGGACGATGCTATGATATTGAAGCAGTTGCTGGAGAAGATAATCAATATATTGCTTATGTTGCTTACCCATTAGACTTATTTGAAGAAGGTTCTGTTACCAATTTATTTACTTCTATTGTTGGTAATGTTTTTGGATTTAAAGCTTTACGAGCTTTACGTCTAGAAGATTTACGTATTCCTCCAGCTTATTCCAAAACTTTTCAAGGCCCACCTCATGGTATTCAAGTTGAACGAGATAAATTAAACAAATATGGTCGTCCATTATTAGGATGTACTATTAAGCCAAAATTAGGTTTATCTGCTAAAAACTACGGTCGAGCTGTATATGAATGTCTTCGTGGTGGACTTGATTTCACAAAAGATGATGAAAACGTAAATTCTCAACCTTTT"
+        },
+        {
+          "https://w3id.org/mixs/0000044": "trnH-psbA",
+          "http://rs.gbif.org/terms/dna_sequence": "TTTAGGAATCTCTGGTACTTTTAACTTCATGATTGTGTTCCAAGCTGAACACAACATCCTTATGCACCCATTCCACATGCTTGGTGTAGCTGGCGTATTCGGCGGCTCTCTATTTAGTGCTATGCATGGTTCCTTGGTAACTTCAAGTTTAATCCGAGAAACTACTGAGAATGAGTCTGCTAATGCAGGTTACAAGTTTGGTCAAGAGGAAGAAACTTACAACATCGTAGCTGCTCACGGTTACTTTGGTAGACTTATTTTCCAATACGCTAGCTTTAACAACTCTCGTTCTTTACACTTCTTTTTAGCTGCTTGGCCTGTAGTAGGTATCTGGTTTACTGCATTAGGTATCAGCACAATGGCTTTCAACCTAAATGGTTTCAACTTTAACCAATCTGTTGTTGATAGTCAAGGCCGTGTAATTAACACTTGGGCTGACATCATCAACCGTGCTAACCTTGGTATGGAAGTTATGCATGAACGTAACGCTCATAATTTCCCTCTAGATTTAGCTTCTGTTGAAGCTCCTTCTGTAAACAGTTAATATTTTTGTTATAATTTTATTCTTATAAAATTATACAAAATAGGATAACAACTTAAAAAATCATGACCTTAGGGATTTAGT-TCCTAAGGTCATGATTTTTCATTTAATAAAAATGAATAAGTTAAAAAAGGCGGACGTGGCCAAGTGGATTAAGGCAGTGGATTGTGGATCCACCATGCGCGG"
+        },
+        {
+          "https://w3id.org/mixs/0000044": "trnL-F",
+          "http://rs.gbif.org/terms/dna_sequence": "GACTTAAATAATTTGAGCTTTAGTAGAAAAACTTACTAAATGCAAGCTTTCAAATTCAGGGAAACTTAGGTTGAAAAAAATATAAGCAATCCTGAGCCAAATTTTATTGTATATTAAAAATAAGATAGGTGCAGAGACTCAATGGAAGCTATCCTAACAAAAAATTTTTATATTTTATTTAAATAAATTTTATATTTATTAATAAAAATAAAATAAAATTTATTTATAAGTTCCTTTTAAATATTAATATTAAGCGAGGATAAAGATAGAGTCCAATTTTACATGTTATGTTAATTTTAGCAACAATTTAAATTGTAGTAAAAAGAAAATCCGTTGGCTTTATTGACCGTGAGGGTTCAAGTCCCTCTACCCCCAAAATTGTAGTTTTTTATTGACATAAGTTTCAAGTTTATGTTAAGATATGCCAATAAAAAAGCCGGAATAGCTCAGTTGGTAGAGCAGAGGACTGAAAATC"
+        }
+      ]
+    },
+    "basisOfRecord": "MATERIAL_SAMPLE",
+    "occurrenceStatus": "PRESENT",
+    "classifications": {
+      "7ddf754f-d193-4cc9-b351-99906754a03b": {
+        "usage": {
+          "key": "9JHVS",
+          "name": "Bryum Hedw.",
+          "rank": "GENUS",
+          "code": "BOTANICAL",
+          "authorship": "Hedw.",
+          "formattedName": "<i>Bryum</i> Hedw."
+        },
+        "acceptedUsage": {
+          "key": "9JHVS",
+          "name": "Bryum Hedw.",
+          "rank": "GENUS",
+          "code": "BOTANICAL",
+          "authorship": "Hedw.",
+          "formattedName": "<i>Bryum</i> Hedw."
+        },
+        "taxonomicStatus": "ACCEPTED",
+        "classification": [
+          {
+            "key": "CS5HF",
+            "name": "Eukaryota",
+            "rank": "DOMAIN"
+          },
+          {
+            "key": "P",
+            "name": "Plantae",
+            "rank": "KINGDOM"
+          },
+          {
+            "key": "9THX2",
+            "name": "Bryobiotina",
+            "rank": "SUBKINGDOM"
+          },
+          {
+            "key": "BJ5TM",
+            "name": "Bryophyta",
+            "rank": "PHYLUM"
+          },
+          {
+            "key": "CHTRW",
+            "name": "Bryopsida",
+            "rank": "CLASS"
+          },
+          {
+            "key": "9JHXN",
+            "name": "Bryidae",
+            "rank": "SUBCLASS"
+          },
+          {
+            "key": "9KTDY",
+            "name": "Bryanae",
+            "rank": "SUPERORDER"
+          },
+          {
+            "key": "KZT6S",
+            "name": "Bryales",
+            "rank": "ORDER"
+          },
+          {
+            "key": "9JFZB",
+            "name": "Bryaceae",
+            "rank": "FAMILY"
+          },
+          {
+            "key": "9JHVS",
+            "name": "Bryum",
+            "rank": "GENUS"
+          }
+        ],
+        "issues": []
+      },
+      "d7dddbf4-2cf0-4f39-9b2a-bb099caae36c": {
+        "usage": {
+          "key": "2676502",
+          "name": "Bryum Hedw.",
+          "rank": "GENUS",
+          "authorship": "Hedw.",
+          "formattedName": "<i>Bryum</i> Hedw."
+        },
+        "acceptedUsage": {
+          "key": "2676502",
+          "name": "Bryum Hedw.",
+          "rank": "GENUS",
+          "authorship": "Hedw.",
+          "formattedName": "<i>Bryum</i> Hedw."
+        },
+        "taxonomicStatus": "ACCEPTED",
+        "classification": [
+          {
+            "key": "6",
+            "name": "Plantae",
+            "rank": "KINGDOM"
+          },
+          {
+            "key": "35",
+            "name": "Bryophyta",
+            "rank": "PHYLUM"
+          },
+          {
+            "key": "327",
+            "name": "Bryopsida",
+            "rank": "CLASS"
+          },
+          {
+            "key": "1333",
+            "name": "Bryales",
+            "rank": "ORDER"
+          },
+          {
+            "key": "8736",
+            "name": "Bryaceae",
+            "rank": "FAMILY"
+          },
+          {
+            "key": "2676502",
+            "name": "Bryum",
+            "rank": "GENUS"
+          }
+        ],
+        "issues": []
+      }
+    },
+    "taxonKey": 2676502,
+    "kingdomKey": 6,
+    "phylumKey": 35,
+    "classKey": 327,
+    "orderKey": 1333,
+    "familyKey": 8736,
+    "genusKey": 2676502,
+    "acceptedTaxonKey": 2676502,
+    "scientificName": "Bryum Hedw.",
+    "scientificNameAuthorship": "Hedw.",
+    "acceptedScientificName": "Bryum Hedw.",
+    "kingdom": "Plantae",
+    "phylum": "Bryophyta",
+    "order": "Bryales",
+    "family": "Bryaceae",
+    "genus": "Bryum",
+    "taxonRank": "GENUS",
+    "taxonomicStatus": "ACCEPTED",
+    "decimalLatitude": 54.7631,
+    "decimalLongitude": -5.83333,
+    "elevation": 244.0,
+    "elevationAccuracy": 0.0,
+    "continent": "EUROPE",
+    "stateProvince": "Northern Ireland",
+    "gadm": {
+      "level0": {
+        "gid": "GBR",
+        "name": "United Kingdom"
+      },
+      "level1": {
+        "gid": "GBR.2_1",
+        "name": "Northern Ireland"
+      },
+      "level2": {
+        "gid": "GBR.2.8_1",
+        "name": "Mid and East Antrim"
+      },
+      "level3": {
+        "gid": "GBR.2.8.2_1",
+        "name": "Carrickfergus"
+      }
+    },
+    "year": 2024,
+    "month": 1,
+    "day": 3,
+    "eventDate": "2024-01-03",
+    "startDayOfYear": 3,
+    "endDayOfYear": 3,
+    "issues": [
+      "GEODETIC_DATUM_ASSUMED_WGS84",
+      "COUNTRY_DERIVED_FROM_COORDINATES",
+      "CONTINENT_DERIVED_FROM_COORDINATES",
+      "INSTITUTION_MATCH_NONE"
+    ],
+    "lastInterpreted": "2026-05-18T10:32:44.309+00:00",
+    "references": "https://boldsystems.org/index.php/Public_RecordView?processid=EDTOL1802-24",
+    "license": "http://creativecommons.org/licenses/by/4.0/legalcode",
+    "isSequenced": true,
+    "identifiers": [
+      {
+        "identifier": "EDTOL1802-24"
+      }
+    ],
+    "media": [],
+    "facts": [],
+    "relations": [],
+    "isInCluster": false,
+    "recordedBy": "DAVID BELL",
+    "identifiedBy": "David Bell",
+    "dnaSequenceID": [
+      "97797d8121b19bd78479ace4ece89e9a",
+      "6c5d63ed57e3e3f54d6784b2811160f5",
+      "1398c249a3995a1450eacb6d35489058",
+      "2963e0577112de2de3bc62cc7bcf0f7f"
+    ],
+    "nucleotideSequence": [
+      {
+        "nucleotideSequenceID": "97797d8121b19bd78479ace4ece89e9a",
+        "targetGene": "ITS2",
+        "sequence": "ATATCTTGGCTCTTGCAACGATGAAGAACGCAGCGAAATGCGATACGTAGTGTGAATTGCAGAATTCCGCGAATCATCGAGTTTTTGAACGCAAGTTGCGCCCGAGGCTTGTCCAAGGGCATTTCCGTTAGAGCGTCACCGCGCCCCCCACCAGACTCCCTTCCTTTGTGGCGGAGTTTTGAGTGGAACTGGCCGTCCCGGAGTGCTAAGTACTCGGGTCGGCTGAAATGGAGGGAATTTGGCCGCCGTGGCATCACTTGCCCCGCGATCAGGTGCGATTTCGAACTCCCACGACACTTAGTGTCGTGGGACTTGGGTCTTCCAAGTGCGGGGCTCCCGGTGAGCCCGAGTGCGTGCCCGAGTTCCACAGCAGGCTACCTTTAGGGGCCTTCCACTCGTGGAGGGCACCGTAGTGAGGAAACGAAGAGGTAACGCATCAGACCTCTAATCGGAAAAGACTACCCGCCGAGTTTAA",
+        "sequenceLength": 475,
+        "gcContent": 0.5642105263157895,
+        "nonIupacFraction": 0.0,
+        "nonACGTNFraction": 0.0,
+        "naturalLanguageDetected": false,
+        "endsTrimmed": false,
+        "gapsOrWhitespaceRemoved": false,
+        "invalid": false
+      },
+      {
+        "nucleotideSequenceID": "6c5d63ed57e3e3f54d6784b2811160f5",
+        "targetGene": "rbcL",
+        "sequence": "AGGTGTTGGATTTAAAGCTGGTGTTAAAGATTACAGATTAACTTATTACACTCCAGATTATCAGACTAAAGAAACTGATATTTTAGCAGCATTTCGAATGACTCCTCAACCAGGAGTACCAGCTGAAGAGGCAGGAGCTGCAGTAGCTGCGGAATCTTCCACTGGTACATGGACCACTGTTTGGACTGATGGACTTACTAGTCTTGATCGTTATAAAGGACGATGCTATGATATTGAAGCAGTTGCTGGAGAAGATAATCAATATATTGCTTATGTTGCTTACCCATTAGACTTATTTGAAGAAGGTTCTGTTACCAATTTATTTACTTCTATTGTTGGTAATGTTTTTGGATTTAAAGCTTTACGAGCTTTACGTCTAGAAGATTTACGTATTCCTCCAGCTTATTCCAAAACTTTTCAAGGCCCACCTCATGGTATTCAAGTTGAACGAGATAAATTAAACAAATATGGTCGTCCATTATTAGGATGTACTATTAAGCCAAAATTAGGTTTATCTGCTAAAAACTACGGTCGAGCTGTATATGAATGTCTTCGTGGTGGACTTGATTTCACAAAAGATGATGAAAACGTAAATTCTCAACCTTTT",
+        "sequenceLength": 607,
+        "gcContent": 0.3657331136738056,
+        "nonIupacFraction": 0.0,
+        "nonACGTNFraction": 0.0,
+        "naturalLanguageDetected": false,
+        "endsTrimmed": false,
+        "gapsOrWhitespaceRemoved": false,
+        "invalid": false
+      },
+      {
+        "nucleotideSequenceID": "1398c249a3995a1450eacb6d35489058",
+        "targetGene": "trnH_psbA_spacer",
+        "sequence": "TTTAGGAATCTCTGGTACTTTTAACTTCATGATTGTGTTCCAAGCTGAACACAACATCCTTATGCACCCATTCCACATGCTTGGTGTAGCTGGCGTATTCGGCGGCTCTCTATTTAGTGCTATGCATGGTTCCTTGGTAACTTCAAGTTTAATCCGAGAAACTACTGAGAATGAGTCTGCTAATGCAGGTTACAAGTTTGGTCAAGAGGAAGAAACTTACAACATCGTAGCTGCTCACGGTTACTTTGGTAGACTTATTTTCCAATACGCTAGCTTTAACAACTCTCGTTCTTTACACTTCTTTTTAGCTGCTTGGCCTGTAGTAGGTATCTGGTTTACTGCATTAGGTATCAGCACAATGGCTTTCAACCTAAATGGTTTCAACTTTAACCAATCTGTTGTTGATAGTCAAGGCCGTGTAATTAACACTTGGGCTGACATCATCAACCGTGCTAACCTTGGTATGGAAGTTATGCATGAACGTAACGCTCATAATTTCCCTCTAGATTTAGCTTCTGTTGAAGCTCCTTCTGTAAACAGTTAATATTTTTGTTATAATTTTATTCTTATAAAATTATACAAAATAGGATAACAACTTAAAAAATCATGACCTTAGGGATTTAGTTCCTAAGGTCATGATTTTTCATTTAATAAAAATGAATAAGTTAAAAAAGGCGGACGTGGCCAAGTGGATTAAGGCAGTGGATTGTGGATCCACCATGCGCGG",
+        "sequenceLength": 727,
+        "gcContent": 0.38239339752407153,
+        "nonIupacFraction": 0.0,
+        "nonACGTNFraction": 0.0,
+        "naturalLanguageDetected": false,
+        "endsTrimmed": false,
+        "gapsOrWhitespaceRemoved": true,
+        "invalid": false
+      },
+      {
+        "nucleotideSequenceID": "2963e0577112de2de3bc62cc7bcf0f7f",
+        "targetGene": "trnL_trnF_spacer",
+        "sequence": "GACTTAAATAATTTGAGCTTTAGTAGAAAAACTTACTAAATGCAAGCTTTCAAATTCAGGGAAACTTAGGTTGAAAAAAATATAAGCAATCCTGAGCCAAATTTTATTGTATATTAAAAATAAGATAGGTGCAGAGACTCAATGGAAGCTATCCTAACAAAAAATTTTTATATTTTATTTAAATAAATTTTATATTTATTAATAAAAATAAAATAAAATTTATTTATAAGTTCCTTTTAAATATTAATATTAAGCGAGGATAAAGATAGAGTCCAATTTTACATGTTATGTTAATTTTAGCAACAATTTAAATTGTAGTAAAAAGAAAATCCGTTGGCTTTATTGACCGTGAGGGTTCAAGTCCCTCTACCCCCAAAATTGTAGTTTTTTATTGACATAAGTTTCAAGTTTATGTTAAGATATGCCAATAAAAAAGCCGGAATAGCTCAGTTGGTAGAGCAGAGGACTGAAAATC",
+        "sequenceLength": 475,
+        "gcContent": 0.26526315789473687,
+        "nonIupacFraction": 0.0,
+        "nonACGTNFraction": 0.0,
+        "naturalLanguageDetected": false,
+        "endsTrimmed": false,
+        "gapsOrWhitespaceRemoved": false,
+        "invalid": false
+      }
+    ],
+    "geodeticDatum": "WGS84",
+    "class": "Bryopsida",
+    "countryCode": "GB",
+    "recordedByIDs": [],
+    "identifiedByIDs": [],
+    "gbifRegion": "EUROPE",
+    "country": "United Kingdom of Great Britain and Northern Ireland",
+    "identifier": "EDTOL1802-24",
+    "disposition": "Vouchered:Registered Collection",
+    "habitat": " Rural garden; on bare soil in flower bed",
+    "http://unknown.org/crawl_attempt": "179",
+    "institutionCode": "Royal Botanic Garden, Edinburgh",
+    "locality": "Cairn Road, N of Carrickfergus, J 3952 9270",
+    "identificationRemarks": "morphology",
+    "fieldNumber": " DBELL1905",
+    "gbifID": "683274973",
+    "occurrenceRemarks": "EDTOL06716,EDTOL06717,EDTOL06718,EDTOL06719,EDTOL06720,EDTOL06721,EDTOL06722,EDTOL06723,EDTOL06724,EDTOL06725,EDTOL06726,EDTOL06727,EDTOL06728,EDTOL06729,EDTOL06730,EDTOL06731",
+    "occurrenceID": "EDTOL1802-24"
+  },
+  {
+    "key": 687849668,
+    "datasetKey": "040c5662-da76-4782-a48e-cdea1892d14c",
+    "publishingOrgKey": "b3bf3a83-1f68-4541-a03f-330d30d567f5",
+    "installationKey": "fb5e4c2a-579c-434b-a446-3a665dd732ad",
+    "hostingOrganizationKey": "fbca90e3-8aed-48b1-84e3-369afbd000ce",
+    "publishingCountry": "ZZ",
+    "protocol": "DWC_ARCHIVE",
+    "lastCrawled": "2026-05-15T08:08:23.873+00:00",
+    "lastParsed": "2026-05-18T10:31:50.288+00:00",
+    "crawlId": 179,
+    "extensions": {
+      "http://rs.gbif.org/terms/1.0/DNADerivedData": [
+        {
+          "https://w3id.org/mixs/0000044": "ITS2",
+          "http://rs.gbif.org/terms/dna_sequence": "ATATCTTGGCTCTTGCAACGATGAAGAACGCAGCGAAATGCGATACGTAGTGTGAATTGCAGAATTCCGCGAATCATCGAGTCTTTGAACGCAAGTTGCGCCCGAGGCTTGACCGAGGGCATTTCTGCCAGAGCGTCACCGCGACACCCACCAAACACACCTATATCCTAGTGCTGTGTTCGAGTGAAAGTGGCCATCCGAATGGGGCCCCGCCCTTCGTTGGGCGCGGGCACAGATTGGGTTGGCTGAAATGTAGGGAATTTGGCCGCCGTGGTAGAACAACCAGCGATCAGGTGATCCGGGTGCAAACCCGGAACTCAAACGTGCGCCGGTTGCGACACCCAGTTTGGTTCCAAGCTCCAAAGCAGGTCTCCCCTCCCCTTCGCTCCACCGAGTGAAGGGGAAAGGGGAAAAACGTCACGCATCAGACCTCTGATCAGAAAAGACTACCCGCTGAGTTTAA"
+        },
+        {
+          "https://w3id.org/mixs/0000044": "rbcL",
+          "http://rs.gbif.org/terms/dna_sequence": "AGGTGTTGGATTTAAAGCTGGTGTTAAAGATTACAGATTAACTTATTACACTCCAGATTATCAAACTAAAGAAACTGATATTTTAGCAGCATTTCGAATGACTCCTCAACCAGGGGTACCACCTGAAGAAGCAGGAGCTGCAGTAGCTGCGGAATCTTCTACTGGTACATGGACTACGGTTTGGACTGATGGACTTACTAGTCTTGATCGTTATAAAGGTCGATGCTATGATATTGAAGCAGTTCCTGGAGAAGAAAATCAATATATCGCTTATGTTGCTTACCCATTAGATTTATTTGAAGAAGGTTCTGTTACTAATTTATTTACTTCTATTGTTGGTAATGTTTTTGGATTTAAAGCTTTACGGGCTTTGCGTCTAGAAGATTTGCGTATTCCTCCAGCTTATTCCAAAACTTTCCAAGGCCCACCTCACGGTATTCAAGTTGAAAGAGACAAATTAAACAAATATGGTCGTCCATTATTAGGATGTACTATTAAACCAAAACTAGGTTTATCTGCTAAAAACTACGGTAGAGCTGTTTATGAATGTCTTCGTGGTGGACTTGATTTCACAAAAGATGATGAAAACGTAAATTCTCAGCCATTC"
+        },
+        {
+          "https://w3id.org/mixs/0000044": "trnH-psbA",
+          "http://rs.gbif.org/terms/dna_sequence": "TTTAGGAATCTCTGGTACTTTTAACTTTATGATTGTGTTCCAAGCTGAACATAACATTCTTATGCACCCATTCCACATGCTTGGTGTAGCTGGTGTATTCGGCGGCTCTCTATTCAGTGCTATGCATGGTTCCTTGGTAACGTCAAGTTTAATCCGAGAAACTACTGAGAACGAATCTGCTAACGCAGGTTACAAGTTTGGTCAAGAAGAAGAAACTTACAACATCGTAGCTGCTCATGGTTACTTTGGTAGACTTATCTTCCAATACGCTAGCTTTAACAACTCTCGTTCTTTACACTTCTTTTTAGCTGCTTGGCCTGTAGTAGGTATCTGGTTTACTGCATTAGGTATTAGCACAATGGCTTTCAACCTAAATGGTTTTAACTTTAACCAATCTGTTGTTGATAGCCAAGGTCGTGTAATTAACACTTGGGCTGATATTATCAACCGTGCTAACCTTGGTATGGAAGTTATGCATGAACGTAACGCTCACAACTTCCCTCTAGATTTAGCTTCTGTTGAAGCTCCTTCTGTAAACGGTTAATATTTTAATTATATTTTTAT-AAAATAAATTTATTTAAAATAGGATAACAACTT-GAAAACAATGACCTTAGG-ATTAAGAGTTCTAAGGTCATTGTTTTT-TTTTAATAAAAA-G--TTTGT-AAAAAAGGCGGACGTGGCCAAGTGGATTAAGGCAGTGGATTGTGGATCCACCATGCGCGG"
+        },
+        {
+          "https://w3id.org/mixs/0000044": "trnL-F",
+          "http://rs.gbif.org/terms/dna_sequence": "GACTTAAATAATTTGAGCTTTAGTAGAAAAACTTATTAAATGCTAGCTTTCAGATTCAGGGAATCTTAGGTTGAAAAAAAGATAAGTAATCCTGAGCCAAATTTTATATTTAAAAAACAAAATAGGTGCAGAGACTCGATGGAAGCTATCCTAACGCGTGTAAATTAAATCAAAAAAATTCATTAAAATTTTTTGATTTAATTTACACGTGAGGATAAAGATAGAGTCCAATTTTACATGTTAATTTTAACAACAATTTAAATTGTAGTAAAAAGAAAATCCGTTGGCTTTATTGACCGTGAGGGTTCAAGTCCCTCTACCCCCAAAATACTTAATTCAAAAATTTTTATTGACATAAGTTTACAGTTTATGTTAGGATAGCCTAAATAAAAAAGCCGGAGTAGCTCAGTTGGTAGAGCAGAGGACTGAAAATC"
+        }
+      ]
+    },
+    "basisOfRecord": "MATERIAL_SAMPLE",
+    "occurrenceStatus": "PRESENT",
+    "classifications": {
+      "7ddf754f-d193-4cc9-b351-99906754a03b": {
+        "usage": {
+          "key": "9JNVH",
+          "name": "Tortula Hedw.",
+          "rank": "GENUS",
+          "code": "BOTANICAL",
+          "authorship": "Hedw.",
+          "formattedName": "<i>Tortula</i> Hedw."
+        },
+        "acceptedUsage": {
+          "key": "9JNVH",
+          "name": "Tortula Hedw.",
+          "rank": "GENUS",
+          "code": "BOTANICAL",
+          "authorship": "Hedw.",
+          "formattedName": "<i>Tortula</i> Hedw."
+        },
+        "taxonomicStatus": "ACCEPTED",
+        "classification": [
+          {
+            "key": "CS5HF",
+            "name": "Eukaryota",
+            "rank": "DOMAIN"
+          },
+          {
+            "key": "P",
+            "name": "Plantae",
+            "rank": "KINGDOM"
+          },
+          {
+            "key": "9THX2",
+            "name": "Bryobiotina",
+            "rank": "SUBKINGDOM"
+          },
+          {
+            "key": "BJ5TM",
+            "name": "Bryophyta",
+            "rank": "PHYLUM"
+          },
+          {
+            "key": "CHTRW",
+            "name": "Bryopsida",
+            "rank": "CLASS"
+          },
+          {
+            "key": "9JHXR",
+            "name": "Dicranidae",
+            "rank": "SUBCLASS"
+          },
+          {
+            "key": "9JFY7",
+            "name": "Pottiales",
+            "rank": "ORDER"
+          },
+          {
+            "key": "9JGDZ",
+            "name": "Pottiaceae",
+            "rank": "FAMILY"
+          },
+          {
+            "key": "9JNVH",
+            "name": "Tortula",
+            "rank": "GENUS"
+          }
+        ],
+        "issues": []
+      },
+      "d7dddbf4-2cf0-4f39-9b2a-bb099caae36c": {
+        "usage": {
+          "key": "9549878",
+          "name": "Tortula Hedw.",
+          "rank": "GENUS",
+          "authorship": "Hedw.",
+          "formattedName": "<i>Tortula</i> Hedw."
+        },
+        "acceptedUsage": {
+          "key": "9549878",
+          "name": "Tortula Hedw.",
+          "rank": "GENUS",
+          "authorship": "Hedw.",
+          "formattedName": "<i>Tortula</i> Hedw."
+        },
+        "taxonomicStatus": "ACCEPTED",
+        "classification": [
+          {
+            "key": "6",
+            "name": "Plantae",
+            "rank": "KINGDOM"
+          },
+          {
+            "key": "35",
+            "name": "Bryophyta",
+            "rank": "PHYLUM"
+          },
+          {
+            "key": "327",
+            "name": "Bryopsida",
+            "rank": "CLASS"
+          },
+          {
+            "key": "621",
+            "name": "Pottiales",
+            "rank": "ORDER"
+          },
+          {
+            "key": "4671",
+            "name": "Pottiaceae",
+            "rank": "FAMILY"
+          },
+          {
+            "key": "9549878",
+            "name": "Tortula",
+            "rank": "GENUS"
+          }
+        ],
+        "issues": []
+      }
+    },
+    "taxonKey": 9549878,
+    "kingdomKey": 6,
+    "phylumKey": 35,
+    "classKey": 327,
+    "orderKey": 621,
+    "familyKey": 4671,
+    "genusKey": 9549878,
+    "acceptedTaxonKey": 9549878,
+    "scientificName": "Tortula Hedw.",
+    "scientificNameAuthorship": "Hedw.",
+    "acceptedScientificName": "Tortula Hedw.",
+    "kingdom": "Plantae",
+    "phylum": "Bryophyta",
+    "order": "Pottiales",
+    "family": "Pottiaceae",
+    "genus": "Tortula",
+    "taxonRank": "GENUS",
+    "taxonomicStatus": "ACCEPTED",
+    "decimalLatitude": 54.7631,
+    "decimalLongitude": -5.83333,
+    "elevation": 244.0,
+    "elevationAccuracy": 0.0,
+    "continent": "EUROPE",
+    "stateProvince": "Northern Ireland",
+    "gadm": {
+      "level0": {
+        "gid": "GBR",
+        "name": "United Kingdom"
+      },
+      "level1": {
+        "gid": "GBR.2_1",
+        "name": "Northern Ireland"
+      },
+      "level2": {
+        "gid": "GBR.2.8_1",
+        "name": "Mid and East Antrim"
+      },
+      "level3": {
+        "gid": "GBR.2.8.2_1",
+        "name": "Carrickfergus"
+      }
+    },
+    "year": 2024,
+    "month": 1,
+    "day": 3,
+    "eventDate": "2024-01-03",
+    "startDayOfYear": 3,
+    "endDayOfYear": 3,
+    "issues": [
+      "GEODETIC_DATUM_ASSUMED_WGS84",
+      "COUNTRY_DERIVED_FROM_COORDINATES",
+      "CONTINENT_DERIVED_FROM_COORDINATES",
+      "INSTITUTION_MATCH_NONE"
+    ],
+    "lastInterpreted": "2026-05-18T10:31:50.288+00:00",
+    "references": "https://boldsystems.org/index.php/Public_RecordView?processid=EDTOL1801-24",
+    "license": "http://creativecommons.org/licenses/by/4.0/legalcode",
+    "isSequenced": true,
+    "identifiers": [
+      {
+        "identifier": "EDTOL1801-24"
+      }
+    ],
+    "media": [],
+    "facts": [],
+    "relations": [],
+    "isInCluster": false,
+    "recordedBy": "DAVID BELL",
+    "identifiedBy": "David Bell",
+    "dnaSequenceID": [
+      "c1d32d98be862e2ce9ddece493c92ded",
+      "606c266f9fbe71817410bc1fadc8999f",
+      "8e7566e340da28619b47ee89f00d63d7",
+      "3b9b9235a01809045343fd529e0f2297"
+    ],
+    "nucleotideSequence": [
+      {
+        "nucleotideSequenceID": "c1d32d98be862e2ce9ddece493c92ded",
+        "targetGene": "ITS2",
+        "sequence": "ATATCTTGGCTCTTGCAACGATGAAGAACGCAGCGAAATGCGATACGTAGTGTGAATTGCAGAATTCCGCGAATCATCGAGTCTTTGAACGCAAGTTGCGCCCGAGGCTTGACCGAGGGCATTTCTGCCAGAGCGTCACCGCGACACCCACCAAACACACCTATATCCTAGTGCTGTGTTCGAGTGAAAGTGGCCATCCGAATGGGGCCCCGCCCTTCGTTGGGCGCGGGCACAGATTGGGTTGGCTGAAATGTAGGGAATTTGGCCGCCGTGGTAGAACAACCAGCGATCAGGTGATCCGGGTGCAAACCCGGAACTCAAACGTGCGCCGGTTGCGACACCCAGTTTGGTTCCAAGCTCCAAAGCAGGTCTCCCCTCCCCTTCGCTCCACCGAGTGAAGGGGAAAGGGGAAAAACGTCACGCATCAGACCTCTGATCAGAAAAGACTACCCGCTGAGTTTAA",
+        "sequenceLength": 463,
+        "gcContent": 0.550755939524838,
+        "nonIupacFraction": 0.0,
+        "nonACGTNFraction": 0.0,
+        "naturalLanguageDetected": false,
+        "endsTrimmed": false,
+        "gapsOrWhitespaceRemoved": false,
+        "invalid": false
+      },
+      {
+        "nucleotideSequenceID": "606c266f9fbe71817410bc1fadc8999f",
+        "targetGene": "rbcL",
+        "sequence": "AGGTGTTGGATTTAAAGCTGGTGTTAAAGATTACAGATTAACTTATTACACTCCAGATTATCAAACTAAAGAAACTGATATTTTAGCAGCATTTCGAATGACTCCTCAACCAGGGGTACCACCTGAAGAAGCAGGAGCTGCAGTAGCTGCGGAATCTTCTACTGGTACATGGACTACGGTTTGGACTGATGGACTTACTAGTCTTGATCGTTATAAAGGTCGATGCTATGATATTGAAGCAGTTCCTGGAGAAGAAAATCAATATATCGCTTATGTTGCTTACCCATTAGATTTATTTGAAGAAGGTTCTGTTACTAATTTATTTACTTCTATTGTTGGTAATGTTTTTGGATTTAAAGCTTTACGGGCTTTGCGTCTAGAAGATTTGCGTATTCCTCCAGCTTATTCCAAAACTTTCCAAGGCCCACCTCACGGTATTCAAGTTGAAAGAGACAAATTAAACAAATATGGTCGTCCATTATTAGGATGTACTATTAAACCAAAACTAGGTTTATCTGCTAAAAACTACGGTAGAGCTGTTTATGAATGTCTTCGTGGTGGACTTGATTTCACAAAAGATGATGAAAACGTAAATTCTCAGCCATTC",
+        "sequenceLength": 607,
+        "gcContent": 0.37067545304777594,
+        "nonIupacFraction": 0.0,
+        "nonACGTNFraction": 0.0,
+        "naturalLanguageDetected": false,
+        "endsTrimmed": false,
+        "gapsOrWhitespaceRemoved": false,
+        "invalid": false
+      },
+      {
+        "nucleotideSequenceID": "8e7566e340da28619b47ee89f00d63d7",
+        "targetGene": "trnH_psbA_spacer",
+        "sequence": "TTTAGGAATCTCTGGTACTTTTAACTTTATGATTGTGTTCCAAGCTGAACATAACATTCTTATGCACCCATTCCACATGCTTGGTGTAGCTGGTGTATTCGGCGGCTCTCTATTCAGTGCTATGCATGGTTCCTTGGTAACGTCAAGTTTAATCCGAGAAACTACTGAGAACGAATCTGCTAACGCAGGTTACAAGTTTGGTCAAGAAGAAGAAACTTACAACATCGTAGCTGCTCATGGTTACTTTGGTAGACTTATCTTCCAATACGCTAGCTTTAACAACTCTCGTTCTTTACACTTCTTTTTAGCTGCTTGGCCTGTAGTAGGTATCTGGTTTACTGCATTAGGTATTAGCACAATGGCTTTCAACCTAAATGGTTTTAACTTTAACCAATCTGTTGTTGATAGCCAAGGTCGTGTAATTAACACTTGGGCTGATATTATCAACCGTGCTAACCTTGGTATGGAAGTTATGCATGAACGTAACGCTCACAACTTCCCTCTAGATTTAGCTTCTGTTGAAGCTCCTTCTGTAAACGGTTAATATTTTAATTATATTTTTATAAAATAAATTTATTTAAAATAGGATAACAACTTGAAAACAATGACCTTAGGATTAAGAGTTCTAAGGTCATTGTTTTTTTTTAATAAAAAGTTTGTAAAAAAGGCGGACGTGGCCAAGTGGATTAAGGCAGTGGATTGTGGATCCACCATGCGCGG",
+        "sequenceLength": 720,
+        "gcContent": 0.3763888888888889,
+        "nonIupacFraction": 0.0,
+        "nonACGTNFraction": 0.0,
+        "naturalLanguageDetected": false,
+        "endsTrimmed": false,
+        "gapsOrWhitespaceRemoved": true,
+        "invalid": false
+      },
+      {
+        "nucleotideSequenceID": "3b9b9235a01809045343fd529e0f2297",
+        "targetGene": "trnL_trnF_spacer",
+        "sequence": "GACTTAAATAATTTGAGCTTTAGTAGAAAAACTTATTAAATGCTAGCTTTCAGATTCAGGGAATCTTAGGTTGAAAAAAAGATAAGTAATCCTGAGCCAAATTTTATATTTAAAAAACAAAATAGGTGCAGAGACTCGATGGAAGCTATCCTAACGCGTGTAAATTAAATCAAAAAAATTCATTAAAATTTTTTGATTTAATTTACACGTGAGGATAAAGATAGAGTCCAATTTTACATGTTAATTTTAACAACAATTTAAATTGTAGTAAAAAGAAAATCCGTTGGCTTTATTGACCGTGAGGGTTCAAGTCCCTCTACCCCCAAAATACTTAATTCAAAAATTTTTATTGACATAAGTTTACAGTTTATGTTAGGATAGCCTAAATAAAAAAGCCGGAGTAGCTCAGTTGGTAGAGCAGAGGACTGAAAATC",
+        "sequenceLength": 434,
+        "gcContent": 0.30184331797235026,
+        "nonIupacFraction": 0.0,
+        "nonACGTNFraction": 0.0,
+        "naturalLanguageDetected": false,
+        "endsTrimmed": false,
+        "gapsOrWhitespaceRemoved": false,
+        "invalid": false
+      }
+    ],
+    "geodeticDatum": "WGS84",
+    "class": "Bryopsida",
+    "countryCode": "GB",
+    "recordedByIDs": [],
+    "identifiedByIDs": [],
+    "gbifRegion": "EUROPE",
+    "country": "United Kingdom of Great Britain and Northern Ireland",
+    "identifier": "EDTOL1801-24",
+    "disposition": "Vouchered:Registered Collection",
+    "habitat": " Rural garden; on bare soil in flower bed",
+    "http://unknown.org/crawl_attempt": "179",
+    "institutionCode": "Royal Botanic Garden, Edinburgh",
+    "locality": "Cairn Road, N of Carrickfergus, J 3952 9270",
+    "identificationRemarks": "morphology",
+    "fieldNumber": " DBELL1904",
+    "gbifID": "687849668",
+    "occurrenceRemarks": "EDTOL06700,EDTOL06701,EDTOL06702,EDTOL06703,EDTOL06704,EDTOL06705,EDTOL06706,EDTOL06707,EDTOL06708,EDTOL06709,EDTOL06710,EDTOL06711,EDTOL06712,EDTOL06713,EDTOL06714,EDTOL06715",
+    "occurrenceID": "EDTOL1801-24"
+  },
+  {
+    "key": 689756488,
+    "datasetKey": "040c5662-da76-4782-a48e-cdea1892d14c",
+    "publishingOrgKey": "b3bf3a83-1f68-4541-a03f-330d30d567f5",
+    "installationKey": "fb5e4c2a-579c-434b-a446-3a665dd732ad",
+    "hostingOrganizationKey": "fbca90e3-8aed-48b1-84e3-369afbd000ce",
+    "publishingCountry": "ZZ",
+    "protocol": "DWC_ARCHIVE",
+    "lastCrawled": "2026-05-15T08:08:23.873+00:00",
+    "lastParsed": "2026-05-18T10:34:32.909+00:00",
+    "crawlId": 179,
+    "extensions": {
+      "http://rs.gbif.org/terms/1.0/DNADerivedData": [
+        {
+          "https://w3id.org/mixs/0000044": "ITS2",
+          "http://rs.gbif.org/terms/dna_sequence": "TGCAGAATCCCGTGAACCATCGAGTCTTTGAATGCAAGTTGCGCCCAATACCTTTAGGTTGAGGGCACGTCTGCCTGGGTGTCACACAAAGCGTCGCACCCCACCAATCCCCTTTGGTTGGGAGCGGATATTGCCCCCCCCAAACCCCTAGGGGCACGGTTGGCACAAATATTGGTCTCCAGCGGCGTGCGTTGAAGTCAACGGTGATTTAAAAACACATGTGGACTTGTTGGCCTCGCCGACTGTGCGGCGAAATAACCCTTAGAACCTGTTCTCAAGGCGTTCACCACGCGACCCCAGGTCAGGCGGGATTACCCGCTGAATTTAAGCATATCAATAAGCGGAGGAAAAGAAACTTACGAGGATTCCCCTAGTAACGGCGAGCGAACCGGGAATAGCCCAGCTTGAGAATCAGATGGCTCCGCCATCTGA"
+        },
+        {
+          "https://w3id.org/mixs/0000044": "rbcL",
+          "http://rs.gbif.org/terms/dna_sequence": "AAGTGTTGGCTTCAAAGCGGGCGTTAAAGATTACAAATTGACTTATTATACTCCTGAATATGCACCCAAGGATACTGATACTTTAGCAGCATTCCGAGTAACTCCTCAACCTGGAGTTCCACCTGAAGAAGCAGGGGCTGCTGTAGCTGCTGAATCTTCTACAGGTACATGGACAACTGTGTGGACCGATGGACTTACCAGCCTTGATCGTTACAAAGGGCGATGCTACCACATTGAGCCCGTTGCTGGAGAAGAAAATCAATATATTTGTTATGTAGCCTATCCTTTAGACCTTTTTGAAGAAGGTTCTGTTACTAACATGTTTACTTCCATTGTGGGTAATGTATTTGGGTTCAAAGCGCTACGCGCTCTACGTCTGGAGGATTTGCGAATTCCTGTTGCTTATGTTAAAACTTTCCAAGGCCCGCCTCATGGCATCCAAGTTGAGAGAGATAAATTGAACAAGTATGGTCGTCCCCTATTGGGATGTACTATTAAACCAAAATTGGGATTATCTGCTAAGAACTATGGCCGGGCGGTTTATGAATGTCTCCGCGGTGGACTTGATTTTACCAAAGATGATGAAAACGTGAACTCCCAACCCTTT"
+        }
+      ]
+    },
+    "basisOfRecord": "MATERIAL_SAMPLE",
+    "occurrenceStatus": "PRESENT",
+    "classifications": {
+      "7ddf754f-d193-4cc9-b351-99906754a03b": {
+        "usage": {
+          "key": "62VCT",
+          "name": "Helleborus L.",
+          "rank": "GENUS",
+          "code": "BOTANICAL",
+          "authorship": "L.",
+          "formattedName": "<i>Helleborus</i> L."
+        },
+        "acceptedUsage": {
+          "key": "62VCT",
+          "name": "Helleborus L.",
+          "rank": "GENUS",
+          "code": "BOTANICAL",
+          "authorship": "L.",
+          "formattedName": "<i>Helleborus</i> L."
+        },
+        "taxonomicStatus": "ACCEPTED",
+        "classification": [
+          {
+            "key": "CS5HF",
+            "name": "Eukaryota",
+            "rank": "DOMAIN"
+          },
+          {
+            "key": "P",
+            "name": "Plantae",
+            "rank": "KINGDOM"
+          },
+          {
+            "key": "CMQ8S",
+            "name": "Pteridobiotina",
+            "rank": "SUBKINGDOM"
+          },
+          {
+            "key": "TP",
+            "name": "Tracheophyta",
+            "rank": "PHYLUM"
+          },
+          {
+            "key": "MG",
+            "name": "Magnoliopsida",
+            "rank": "CLASS"
+          },
+          {
+            "key": "3XS",
+            "name": "Ranunculales",
+            "rank": "ORDER"
+          },
+          {
+            "key": "FJR",
+            "name": "Ranunculaceae",
+            "rank": "FAMILY"
+          },
+          {
+            "key": "K95",
+            "name": "Ranunculoideae",
+            "rank": "SUBFAMILY"
+          },
+          {
+            "key": "KVCDZ",
+            "name": "Helleboreae",
+            "rank": "TRIBE"
+          },
+          {
+            "key": "62VCT",
+            "name": "Helleborus",
+            "rank": "GENUS"
+          }
+        ],
+        "issues": []
+      },
+      "d7dddbf4-2cf0-4f39-9b2a-bb099caae36c": {
+        "usage": {
+          "key": "2741682",
+          "name": "Helleborus L.",
+          "rank": "GENUS",
+          "authorship": "L.",
+          "formattedName": "<i>Helleborus</i> L."
+        },
+        "acceptedUsage": {
+          "key": "2741682",
+          "name": "Helleborus L.",
+          "rank": "GENUS",
+          "authorship": "L.",
+          "formattedName": "<i>Helleborus</i> L."
+        },
+        "taxonomicStatus": "ACCEPTED",
+        "classification": [
+          {
+            "key": "6",
+            "name": "Plantae",
+            "rank": "KINGDOM"
+          },
+          {
+            "key": "7707728",
+            "name": "Tracheophyta",
+            "rank": "PHYLUM"
+          },
+          {
+            "key": "220",
+            "name": "Magnoliopsida",
+            "rank": "CLASS"
+          },
+          {
+            "key": "399",
+            "name": "Ranunculales",
+            "rank": "ORDER"
+          },
+          {
+            "key": "2410",
+            "name": "Ranunculaceae",
+            "rank": "FAMILY"
+          },
+          {
+            "key": "2741682",
+            "name": "Helleborus",
+            "rank": "GENUS"
+          }
+        ],
+        "issues": []
+      }
+    },
+    "taxonKey": 2741682,
+    "kingdomKey": 6,
+    "phylumKey": 7707728,
+    "classKey": 220,
+    "orderKey": 399,
+    "familyKey": 2410,
+    "genusKey": 2741682,
+    "acceptedTaxonKey": 2741682,
+    "scientificName": "Helleborus L.",
+    "scientificNameAuthorship": "L.",
+    "acceptedScientificName": "Helleborus L.",
+    "kingdom": "Plantae",
+    "phylum": "Tracheophyta",
+    "order": "Ranunculales",
+    "family": "Ranunculaceae",
+    "genus": "Helleborus",
+    "taxonRank": "GENUS",
+    "taxonomicStatus": "ACCEPTED",
+    "decimalLatitude": 55.987,
+    "decimalLongitude": -2.749,
+    "continent": "EUROPE",
+    "stateProvince": "Scotland",
+    "gadm": {
+      "level0": {
+        "gid": "GBR",
+        "name": "United Kingdom"
+      },
+      "level1": {
+        "gid": "GBR.3_1",
+        "name": "Scotland"
+      },
+      "level2": {
+        "gid": "GBR.3.10_1",
+        "name": "East Lothian"
+      },
+      "level3": {
+        "gid": "GBR.3.10.1_1",
+        "name": "East Lothian"
+      }
+    },
+    "year": 2024,
+    "month": 1,
+    "day": 8,
+    "eventDate": "2024-01-08",
+    "startDayOfYear": 8,
+    "endDayOfYear": 8,
+    "issues": [
+      "GEODETIC_DATUM_ASSUMED_WGS84",
+      "COUNTRY_DERIVED_FROM_COORDINATES",
+      "CONTINENT_DERIVED_FROM_COORDINATES",
+      "INSTITUTION_MATCH_NONE"
+    ],
+    "lastInterpreted": "2026-05-18T10:34:32.909+00:00",
+    "references": "https://boldsystems.org/index.php/Public_RecordView?processid=EDTOL1720-24",
+    "license": "http://creativecommons.org/licenses/by/4.0/legalcode",
+    "isSequenced": true,
+    "identifiers": [
+      {
+        "identifier": "EDTOL1720-24"
+      }
+    ],
+    "media": [],
+    "facts": [],
+    "relations": [],
+    "isInCluster": false,
+    "recordedBy": "MARKUS RUHSAM",
+    "identifiedBy": "Markus Ruhsam",
+    "dnaSequenceID": [
+      "f7e54e5122a750fa6e50dc4491b4e059",
+      "f9f2f0f62f5f1e8335e2462d2d824297"
+    ],
+    "nucleotideSequence": [
+      {
+        "nucleotideSequenceID": "f7e54e5122a750fa6e50dc4491b4e059",
+        "targetGene": "ITS2",
+        "sequence": "TGCAGAATCCCGTGAACCATCGAGTCTTTGAATGCAAGTTGCGCCCAATACCTTTAGGTTGAGGGCACGTCTGCCTGGGTGTCACACAAAGCGTCGCACCCCACCAATCCCCTTTGGTTGGGAGCGGATATTGCCCCCCCCAAACCCCTAGGGGCACGGTTGGCACAAATATTGGTCTCCAGCGGCGTGCGTTGAAGTCAACGGTGATTTAAAAACACATGTGGACTTGTTGGCCTCGCCGACTGTGCGGCGAAATAACCCTTAGAACCTGTTCTCAAGGCGTTCACCACGCGACCCCAGGTCAGGCGGGATTACCCGCTGAATTTAAGCATATCAATAAGCGGAGGAAAAGAAACTTACGAGGATTCCCCTAGTAACGGCGAGCGAACCGGGAATAGCCCAGCTTGAGAATCAGATGGCTCCGCCATCTGA",
+        "sequenceLength": 432,
+        "gcContent": 0.5393518518518519,
+        "nonIupacFraction": 0.0,
+        "nonACGTNFraction": 0.0,
+        "naturalLanguageDetected": false,
+        "endsTrimmed": false,
+        "gapsOrWhitespaceRemoved": false,
+        "invalid": false
+      },
+      {
+        "nucleotideSequenceID": "f9f2f0f62f5f1e8335e2462d2d824297",
+        "targetGene": "rbcL",
+        "sequence": "AAGTGTTGGCTTCAAAGCGGGCGTTAAAGATTACAAATTGACTTATTATACTCCTGAATATGCACCCAAGGATACTGATACTTTAGCAGCATTCCGAGTAACTCCTCAACCTGGAGTTCCACCTGAAGAAGCAGGGGCTGCTGTAGCTGCTGAATCTTCTACAGGTACATGGACAACTGTGTGGACCGATGGACTTACCAGCCTTGATCGTTACAAAGGGCGATGCTACCACATTGAGCCCGTTGCTGGAGAAGAAAATCAATATATTTGTTATGTAGCCTATCCTTTAGACCTTTTTGAAGAAGGTTCTGTTACTAACATGTTTACTTCCATTGTGGGTAATGTATTTGGGTTCAAAGCGCTACGCGCTCTACGTCTGGAGGATTTGCGAATTCCTGTTGCTTATGTTAAAACTTTCCAAGGCCCGCCTCATGGCATCCAAGTTGAGAGAGATAAATTGAACAAGTATGGTCGTCCCCTATTGGGATGTACTATTAAACCAAAATTGGGATTATCTGCTAAGAACTATGGCCGGGCGGTTTATGAATGTCTCCGCGGTGGACTTGATTTTACCAAAGATGATGAAAACGTGAACTCCCAACCCTTT",
+        "sequenceLength": 607,
+        "gcContent": 0.43492586490939045,
+        "nonIupacFraction": 0.0,
+        "nonACGTNFraction": 0.0,
+        "naturalLanguageDetected": false,
+        "endsTrimmed": false,
+        "gapsOrWhitespaceRemoved": false,
+        "invalid": false
+      }
+    ],
+    "geodeticDatum": "WGS84",
+    "class": "Magnoliopsida",
+    "countryCode": "GB",
+    "recordedByIDs": [],
+    "identifiedByIDs": [],
+    "gbifRegion": "EUROPE",
+    "country": "United Kingdom of Great Britain and Northern Ireland",
+    "identifier": "EDTOL1720-24",
+    "disposition": "Vouchered:Registered Collection",
+    "habitat": "in garden",
+    "http://unknown.org/crawl_attempt": "179",
+    "institutionCode": "Royal Botanic Garden, EdinburghEDNA24-0065341",
+    "identificationRemarks": "morphology",
+    "fieldNumber": "DMR400",
+    "gbifID": "689756488",
+    "occurrenceRemarks": "EDTOL06667",
+    "occurrenceID": "EDTOL1720-24"
+  },
+  {
+    "key": 692897265,
+    "datasetKey": "040c5662-da76-4782-a48e-cdea1892d14c",
+    "publishingOrgKey": "b3bf3a83-1f68-4541-a03f-330d30d567f5",
+    "installationKey": "fb5e4c2a-579c-434b-a446-3a665dd732ad",
+    "hostingOrganizationKey": "fbca90e3-8aed-48b1-84e3-369afbd000ce",
+    "publishingCountry": "ZZ",
+    "protocol": "DWC_ARCHIVE",
+    "lastCrawled": "2026-05-15T08:08:23.873+00:00",
+    "lastParsed": "2026-05-18T10:32:12.955+00:00",
+    "crawlId": 179,
+    "extensions": {
+      "http://rs.gbif.org/terms/1.0/DNADerivedData": [
+        {
+          "https://w3id.org/mixs/0000044": "ITS2",
+          "http://rs.gbif.org/terms/dna_sequence": "ATATCTTGGCTCTTGCAACGATGAAGAACGCAGCGAAATGCGATACCTAGTGTGAATTGCAGAATTCCGCGAATCATCGAGTCTTTGAACGCAAGTTGCGCCCGAGGCTTGTCCCGAGGGCATGCCTGCCTGAGCGTCACCGCACTCCCACCTGGA-AATCTCTCCAGAGTGGAACTGGC-CGTCCGGGACCCGGC-GT--GA-A---GC------T---ATGGGTGCCGGTCGGCTGAAATGTAGCGATCTGGACGTAGCCCGAGAGGGAGGCCGCGAGAAGGTGATCTGCCCTTTGCCGGGCAGAGTCTTATTGGACAGCGCCTCCCCTCTTGGGTGGTCTGATCGA-CGAGCAAGAGGGGGAGCCTTTGGTTCCCTCCCTTGCATCACTGGGGAGAGTGCAAGTAACTCTGCACTCCCCCCTCCCCATGGCTTGGACCTCAGATCAGGCAAGATTACCCGCTGAGTTTAA"
+        },
+        {
+          "https://w3id.org/mixs/0000044": "rbcL",
+          "http://rs.gbif.org/terms/dna_sequence": "AGGTGTTGGATTCAAAGCTGGTGTTAAAGATTATAGATTAAATTATTATACGCCTGATTATGAGACAAAAGCGACAGATATTTTAGCAGCATTTCGTATGACTCCTCAACCGGGAGTACCACCCGAAGAAGCAGGGGCAGCAGTAGCTGCTGAATCTTCAACCGGTACATGGACTACGGTTTGGACTGATGGGCTTACAAGTCTTGACCGTTACAAAGGTCGATGCTATGACATTGAACCCGTTGCTGGTGAAGAAAATCAATATATTGCTTATGTAGCTTATCCGTTAGATTTATTCGAAGAAGGTTCTGTTACAAATCTTTTCACTTCCATCGTAGGTAATGTATTCGGATTCAAAGCTTTACGAGCTTTACGTCTTGAAGATTTACGTATTCCTCCAGCTTATGTAAAAACTTTCCAAGGTCCACCTCATGGTATCCAAGTTGAAAGAGATAAATTAAATAAATACGGTCGTCCTTTATTGGGCTGTACTATCAAACCAAAATTAGGTTTATCTGCTAAAAATTATGGTAGAGCTGTATATGAATGTCTTCGTGGTGGGCTTGACTTTACAAAAGATGATGAGAATGTAAACTCCCAACCATTT"
+        },
+        {
+          "https://w3id.org/mixs/0000044": "trnH-psbA",
+          "http://rs.gbif.org/terms/dna_sequence": "TTTAGGTATTTCCGGTACTTTCAATTTCATGATTGTATTCCAAGCTGAACATAACATCCTTATGCACCCGTTCCACATGTTGGGTGTAGCTGGTGTATTCGGCGGCTCTCTATTTAGTGCTATGCATGGTTCCTTGGTAACTTCTAGTTTAATCAGAGAAACTACTGAAAATGAATCTGCTAACGCAGGTTATAAATTCGGTCAAGAAGAAGAAACTTACAATATTGTAGCGGCTCACGGTTATTTTGGTAGATTAATTTTCCAATATGCAAGCTTCAACAATTCTCGTTCATTACATTTCTTCTTAGCTGCTTGGCCTGTTGTAGGTATTTGGTTTACTGCTTTAGGTATTAGCACTATGGCGTTTAACTTAAATGGTTTCAATTTTAACCAATCTGTAGTTGATAGTCAAGGTCGTGTTATTAATACTTGGGCTGATATTATCAATCGTGCTAACCTTGGTATGGAAGTTATGCATGAACGTAATGCTCATAATTTCCCTCTAGATTTAGCTGCTATTGAAGCTCCTATTACTAACGGTTAATA-CTTAAA-AC--TAGATTCTAACCTTTCAAGA-ACTATA-AATTTAT-GAAGGGGCAGA----AAAACTAAAAAAAAATAATGATCCTTA-AGAGTCAAAGC-TTGAGGA--T--C-A--T-TATTTAGAC--TTTAT-TT--AT-AT--A-----GTA--TAGTAAAATGAAATAAGG--GCGGA-CGTAGCCAAGTGGATTAAGGCAGTGGATT-GTG-GATCCTCCATTCGCGG"
+        },
+        {
+          "https://w3id.org/mixs/0000044": "trnL-F",
+          "http://rs.gbif.org/terms/dna_sequence": "GACTTAATTTAATTGAGCCTTAGTAAAGAAATTAACTAAGTGATTGTTTCCATATTCAGGGAAATCTAGGTTGATAAA-A-ACATAA-T-AGATAATCCTGAGCCAA-ATTTTGTTTCGCAAACAAAATAGGTGCAGAGACTCAAAGGGAAC-T-G-TC-----T-AA-AAA-AT--TTTGTCA-TTTGTACCCTTGGTTCGTTCT-A-T-A--ACGT--GT-CA---A-T--A-GGATA--ATCGAAGATCATTAATA---A-A-G-TTATTTCTGAGTTATT-AT--AAATAATAAT-ATTAAATAAAGATAAAGATAGAGTCCATTTTTACAGGCTA-AGTTTAACATAGCAAAGATGTAAATCATTGTAAAAAGAAAATCCGTTGGCTTTTTAGACCGTGAGGGTTCAAGTCCCTCTACCCCCAGAATAAAT-AAATAT-TTTATAATATTGACATAATTTTTATTTCCATGTTAGAATT--AG-----CA-AAAATTGCCGGAATAGCTCAGTTGGTAGAGCAGAGGACTGAAAATC"
+        }
+      ]
+    },
+    "basisOfRecord": "MATERIAL_SAMPLE",
+    "occurrenceStatus": "PRESENT",
+    "classifications": {
+      "7ddf754f-d193-4cc9-b351-99906754a03b": {
+        "usage": {
+          "key": "9KVC4",
+          "name": "Lophocolea (Dumort.) Dumort.",
+          "rank": "GENUS",
+          "code": "BOTANICAL",
+          "authorship": "(Dumort.) Dumort.",
+          "formattedName": "<i>Lophocolea</i> (Dumort.) Dumort."
+        },
+        "acceptedUsage": {
+          "key": "9KVC4",
+          "name": "Lophocolea (Dumort.) Dumort.",
+          "rank": "GENUS",
+          "code": "BOTANICAL",
+          "authorship": "(Dumort.) Dumort.",
+          "formattedName": "<i>Lophocolea</i> (Dumort.) Dumort."
+        },
+        "taxonomicStatus": "ACCEPTED",
+        "classification": [
+          {
+            "key": "CS5HF",
+            "name": "Eukaryota",
+            "rank": "DOMAIN"
+          },
+          {
+            "key": "P",
+            "name": "Plantae",
+            "rank": "KINGDOM"
+          },
+          {
+            "key": "9THX2",
+            "name": "Bryobiotina",
+            "rank": "SUBKINGDOM"
+          },
+          {
+            "key": "9J9G3",
+            "name": "Marchantiophyta",
+            "rank": "PHYLUM"
+          },
+          {
+            "key": "9J9G4",
+            "name": "Jungermanniopsida",
+            "rank": "CLASS"
+          },
+          {
+            "key": "9JHXW",
+            "name": "Jungermanniidae",
+            "rank": "SUBCLASS"
+          },
+          {
+            "key": "BV8D4",
+            "name": "Lepidoziales",
+            "rank": "ORDER"
+          },
+          {
+            "key": "9JG46",
+            "name": "Lophocoleaceae",
+            "rank": "FAMILY"
+          },
+          {
+            "key": "9KVC4",
+            "name": "Lophocolea",
+            "rank": "GENUS"
+          }
+        ],
+        "issues": []
+      },
+      "d7dddbf4-2cf0-4f39-9b2a-bb099caae36c": {
+        "usage": {
+          "key": "4276909",
+          "name": "Lophocolea (Dumort.) Dumort.",
+          "rank": "GENUS",
+          "code": "BOTANICAL",
+          "authorship": "(Dumort.) Dumort.",
+          "formattedName": "<i>Lophocolea</i> (Dumort.) Dumort."
+        },
+        "acceptedUsage": {
+          "key": "4276909",
+          "name": "Lophocolea (Dumort.) Dumort.",
+          "rank": "GENUS",
+          "code": "BOTANICAL",
+          "authorship": "(Dumort.) Dumort.",
+          "formattedName": "<i>Lophocolea</i> (Dumort.) Dumort."
+        },
+        "taxonomicStatus": "ACCEPTED",
+        "classification": [
+          {
+            "key": "6",
+            "name": "Plantae",
+            "rank": "KINGDOM"
+          },
+          {
+            "key": "9",
+            "name": "Marchantiophyta",
+            "rank": "PHYLUM"
+          },
+          {
+            "key": "126",
+            "name": "Jungermanniopsida",
+            "rank": "CLASS"
+          },
+          {
+            "key": "381",
+            "name": "Jungermanniales",
+            "rank": "ORDER"
+          },
+          {
+            "key": "6134",
+            "name": "Lophocoleaceae",
+            "rank": "FAMILY"
+          },
+          {
+            "key": "4276909",
+            "name": "Lophocolea",
+            "rank": "GENUS"
+          }
+        ],
+        "issues": []
+      }
+    },
+    "taxonKey": 4276909,
+    "kingdomKey": 6,
+    "phylumKey": 9,
+    "classKey": 126,
+    "orderKey": 381,
+    "familyKey": 6134,
+    "genusKey": 4276909,
+    "acceptedTaxonKey": 4276909,
+    "scientificName": "Lophocolea (Dumort.) Dumort.",
+    "scientificNameAuthorship": "(Dumort.) Dumort.",
+    "acceptedScientificName": "Lophocolea (Dumort.) Dumort.",
+    "kingdom": "Plantae",
+    "phylum": "Marchantiophyta",
+    "order": "Jungermanniales",
+    "family": "Lophocoleaceae",
+    "genus": "Lophocolea",
+    "taxonRank": "GENUS",
+    "taxonomicStatus": "ACCEPTED",
+    "decimalLatitude": 54.7628,
+    "decimalLongitude": -5.83306,
+    "elevation": 243.0,
+    "elevationAccuracy": 0.0,
+    "continent": "EUROPE",
+    "stateProvince": "Northern Ireland",
+    "gadm": {
+      "level0": {
+        "gid": "GBR",
+        "name": "United Kingdom"
+      },
+      "level1": {
+        "gid": "GBR.2_1",
+        "name": "Northern Ireland"
+      },
+      "level2": {
+        "gid": "GBR.2.8_1",
+        "name": "Mid and East Antrim"
+      },
+      "level3": {
+        "gid": "GBR.2.8.2_1",
+        "name": "Carrickfergus"
+      }
+    },
+    "year": 2024,
+    "month": 1,
+    "day": 3,
+    "eventDate": "2024-01-03",
+    "startDayOfYear": 3,
+    "endDayOfYear": 3,
+    "issues": [
+      "GEODETIC_DATUM_ASSUMED_WGS84",
+      "COUNTRY_DERIVED_FROM_COORDINATES",
+      "CONTINENT_DERIVED_FROM_COORDINATES",
+      "INSTITUTION_MATCH_NONE"
+    ],
+    "lastInterpreted": "2026-05-18T10:32:12.955+00:00",
+    "references": "https://boldsystems.org/index.php/Public_RecordView?processid=EDTOL1799-24",
+    "license": "http://creativecommons.org/licenses/by/4.0/legalcode",
+    "isSequenced": true,
+    "identifiers": [
+      {
+        "identifier": "EDTOL1799-24"
+      }
+    ],
+    "media": [],
+    "facts": [],
+    "relations": [],
+    "isInCluster": false,
+    "recordedBy": "DAVID BELL",
+    "identifiedBy": "David Bell",
+    "dnaSequenceID": [
+      "306343c42c21532d484da32ecc5bc3b9",
+      "83d54d24e085c8910a9a67d8aadd9dde",
+      "aa54fb716cbaf28d75fc1370996097a9",
+      "db51707312b4845ab55aef19630f8e6a"
+    ],
+    "nucleotideSequence": [
+      {
+        "nucleotideSequenceID": "306343c42c21532d484da32ecc5bc3b9",
+        "targetGene": "ITS2",
+        "sequence": "ATATCTTGGCTCTTGCAACGATGAAGAACGCAGCGAAATGCGATACCTAGTGTGAATTGCAGAATTCCGCGAATCATCGAGTCTTTGAACGCAAGTTGCGCCCGAGGCTTGTCCCGAGGGCATGCCTGCCTGAGCGTCACCGCACTCCCACCTGGAAATCTCTCCAGAGTGGAACTGGCCGTCCGGGACCCGGCGTGAAGCTATGGGTGCCGGTCGGCTGAAATGTAGCGATCTGGACGTAGCCCGAGAGGGAGGCCGCGAGAAGGTGATCTGCCCTTTGCCGGGCAGAGTCTTATTGGACAGCGCCTCCCCTCTTGGGTGGTCTGATCGACGAGCAAGAGGGGGAGCCTTTGGTTCCCTCCCTTGCATCACTGGGGAGAGTGCAAGTAACTCTGCACTCCCCCCTCCCCATGGCTTGGACCTCAGATCAGGCAAGATTACCCGCTGAGTTTAA",
+        "sequenceLength": 454,
+        "gcContent": 0.579295154185022,
+        "nonIupacFraction": 0.0,
+        "nonACGTNFraction": 0.0,
+        "naturalLanguageDetected": false,
+        "endsTrimmed": false,
+        "gapsOrWhitespaceRemoved": true,
+        "invalid": false
+      },
+      {
+        "nucleotideSequenceID": "83d54d24e085c8910a9a67d8aadd9dde",
+        "targetGene": "rbcL",
+        "sequence": "AGGTGTTGGATTCAAAGCTGGTGTTAAAGATTATAGATTAAATTATTATACGCCTGATTATGAGACAAAAGCGACAGATATTTTAGCAGCATTTCGTATGACTCCTCAACCGGGAGTACCACCCGAAGAAGCAGGGGCAGCAGTAGCTGCTGAATCTTCAACCGGTACATGGACTACGGTTTGGACTGATGGGCTTACAAGTCTTGACCGTTACAAAGGTCGATGCTATGACATTGAACCCGTTGCTGGTGAAGAAAATCAATATATTGCTTATGTAGCTTATCCGTTAGATTTATTCGAAGAAGGTTCTGTTACAAATCTTTTCACTTCCATCGTAGGTAATGTATTCGGATTCAAAGCTTTACGAGCTTTACGTCTTGAAGATTTACGTATTCCTCCAGCTTATGTAAAAACTTTCCAAGGTCCACCTCATGGTATCCAAGTTGAAAGAGATAAATTAAATAAATACGGTCGTCCTTTATTGGGCTGTACTATCAAACCAAAATTAGGTTTATCTGCTAAAAATTATGGTAGAGCTGTATATGAATGTCTTCGTGGTGGGCTTGACTTTACAAAAGATGATGAGAATGTAAACTCCCAACCATTT",
+        "sequenceLength": 607,
+        "gcContent": 0.3871499176276771,
+        "nonIupacFraction": 0.0,
+        "nonACGTNFraction": 0.0,
+        "naturalLanguageDetected": false,
+        "endsTrimmed": false,
+        "gapsOrWhitespaceRemoved": false,
+        "invalid": false
+      },
+      {
+        "nucleotideSequenceID": "aa54fb716cbaf28d75fc1370996097a9",
+        "targetGene": "trnH_psbA_spacer",
+        "sequence": "TTTAGGTATTTCCGGTACTTTCAATTTCATGATTGTATTCCAAGCTGAACATAACATCCTTATGCACCCGTTCCACATGTTGGGTGTAGCTGGTGTATTCGGCGGCTCTCTATTTAGTGCTATGCATGGTTCCTTGGTAACTTCTAGTTTAATCAGAGAAACTACTGAAAATGAATCTGCTAACGCAGGTTATAAATTCGGTCAAGAAGAAGAAACTTACAATATTGTAGCGGCTCACGGTTATTTTGGTAGATTAATTTTCCAATATGCAAGCTTCAACAATTCTCGTTCATTACATTTCTTCTTAGCTGCTTGGCCTGTTGTAGGTATTTGGTTTACTGCTTTAGGTATTAGCACTATGGCGTTTAACTTAAATGGTTTCAATTTTAACCAATCTGTAGTTGATAGTCAAGGTCGTGTTATTAATACTTGGGCTGATATTATCAATCGTGCTAACCTTGGTATGGAAGTTATGCATGAACGTAATGCTCATAATTTCCCTCTAGATTTAGCTGCTATTGAAGCTCCTATTACTAACGGTTAATACTTAAAACTAGATTCTAACCTTTCAAGAACTATAAATTTATGAAGGGGCAGAAAAACTAAAAAAAAATAATGATCCTTAAGAGTCAAAGCTTGAGGATCATTATTTAGACTTTATTTATATAGTATAGTAAAATGAAATAAGGGCGGACGTAGCCAAGTGGATTAAGGCAGTGGATTGTGGATCCTCCATTCGCGG",
+        "sequenceLength": 742,
+        "gcContent": 0.35983827493261455,
+        "nonIupacFraction": 0.0,
+        "nonACGTNFraction": 0.0,
+        "naturalLanguageDetected": false,
+        "endsTrimmed": false,
+        "gapsOrWhitespaceRemoved": true,
+        "invalid": false
+      },
+      {
+        "nucleotideSequenceID": "db51707312b4845ab55aef19630f8e6a",
+        "targetGene": "trnL_trnF_spacer",
+        "sequence": "GACTTAATTTAATTGAGCCTTAGTAAAGAAATTAACTAAGTGATTGTTTCCATATTCAGGGAAATCTAGGTTGATAAAAACATAATAGATAATCCTGAGCCAAATTTTGTTTCGCAAACAAAATAGGTGCAGAGACTCAAAGGGAACTGTCTAAAAAATTTTGTCATTTGTACCCTTGGTTCGTTCTATAACGTGTCAATAGGATAATCGAAGATCATTAATAAAGTTATTTCTGAGTTATTATAAATAATAATATTAAATAAAGATAAAGATAGAGTCCATTTTTACAGGCTAAGTTTAACATAGCAAAGATGTAAATCATTGTAAAAAGAAAATCCGTTGGCTTTTTAGACCGTGAGGGTTCAAGTCCCTCTACCCCCAGAATAAATAAATATTTTATAATATTGACATAATTTTTATTTCCATGTTAGAATTAGCAAAAATTGCCGGAATAGCTCAGTTGGTAGAGCAGAGGACTGAAAATC",
+        "sequenceLength": 485,
+        "gcContent": 0.3030927835051546,
+        "nonIupacFraction": 0.0,
+        "nonACGTNFraction": 0.0,
+        "naturalLanguageDetected": false,
+        "endsTrimmed": false,
+        "gapsOrWhitespaceRemoved": true,
+        "invalid": false
+      }
+    ],
+    "geodeticDatum": "WGS84",
+    "class": "Jungermanniopsida",
+    "countryCode": "GB",
+    "recordedByIDs": [],
+    "identifiedByIDs": [],
+    "gbifRegion": "EUROPE",
+    "country": "United Kingdom of Great Britain and Northern Ireland",
+    "identifier": "EDTOL1799-24",
+    "disposition": "Vouchered:Registered Collection",
+    "habitat": "Rural garden; on mossy stone wall",
+    "http://unknown.org/crawl_attempt": "179",
+    "institutionCode": "Royal Botanic Garden, Edinburgh",
+    "locality": "Cairn Road, N of Carrickfergus, J 3952 9270",
+    "identificationRemarks": "morphology",
+    "fieldNumber": "DBELL1902",
+    "gbifID": "692897265",
+    "occurrenceRemarks": "EDTOL06668,EDTOL06669,EDTOL06670,EDTOL06671,EDTOL06672,EDTOL06673,EDTOL06674,EDTOL06675,EDTOL06676,EDTOL06677,EDTOL06678,EDTOL06679,EDTOL06680,EDTOL06681,EDTOL06682,EDTOL06683",
+    "occurrenceID": "EDTOL1799-24"
+  }
+]

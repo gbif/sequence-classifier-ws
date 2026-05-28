@@ -1,5 +1,19 @@
 import express from 'express';
 import { pickBestMatch } from './pickBestMatch.mjs';
+import { assignTaxonomyToOccurrence } from './assignTaxonomyToOccurrence.mjs';
+
+const selectorCache = new Map();
+selectorCache.set('pickBestMatch', pickBestMatch);
+
+async function loadSelector(name) {
+  if (selectorCache.has(name)) return selectorCache.get(name);
+  if (!/^\w+$/.test(name)) throw new Error(`Invalid selector name: ${name}`);
+  const mod = await import(new URL(`./${name}.mjs`, import.meta.url));
+  const fn = mod[name];
+  if (typeof fn !== 'function') throw new Error(`Module ${name}.mjs does not export a function named '${name}'`);
+  selectorCache.set(name, fn);
+  return fn;
+}
 
 const VSEARCH_URL = process.env.VSEARCH_URL || 'http://0.0.0.0:8000/search/batch';
 const PORT = process.env.PORT || 3000;
@@ -143,12 +157,21 @@ function parseAlnout(text, sequences) {
 // ── Express server ───────────────────────────────────────────────────────────
 
 const app = express();
-app.use(express.text({ type: '*/*', limit: '50mb' }));
+app.use(express.json({ limit: '10mb' }));                    // for /occurrence/classify
+app.use(express.text({ type: 'text/*', limit: '50mb' }));   // for /search/batch
 
 app.post('/search/batch', async (req, res) => {
   const outfmt = req.query.outfmt || 'blast6out';
   if (!['blast6out', 'alnout'].includes(outfmt)) {
     return res.status(400).json({ error: `Unknown outfmt: ${outfmt}` });
+  }
+
+  const selectorName = req.query.selector || 'pickBestMatch';
+  let selector;
+  try {
+    selector = await loadSelector(selectorName);
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
   }
 
   const body = req.body;
@@ -179,10 +202,67 @@ app.post('/search/batch', async (req, res) => {
     : parseAlnout(text, sequences);
 
   const result = Object.fromEntries(
-    Object.entries(parsed).map(([queryId, matches]) => [queryId, pickBestMatch(queryId, matches)])
+    Object.entries(parsed).map(([queryId, matches]) => [queryId, selector(queryId, matches)])
   );
 
   res.json(result);
+});
+
+// ── POST /occurrence/classify ─────────────────────────────────────────────────
+//
+// Accept a single GBIF occurrence object (JSON), extract its nucleotide
+// sequences, run vsearch for each, and return a DnaClassification that the
+// GBIF pipeline can feed to the taxon-matching service.
+//
+// Request body: a GBIF occurrence object (Content-Type: application/json).
+//   The occurrence is expected to carry DNA sequence data — see
+//   extractSequences() in assignTaxonomyToOccurrence.mjs for the expected shape.
+//
+// Response (200):
+//   { scientificName, taxonRank, [kingdom, phylum, class, order, family, genus, species], remarks }
+//
+// Response (204): occurrence had no sequences or no matches were found.
+//
+// Response (400): malformed request body.
+//
+app.post('/occurrence/classify', async (req, res) => {
+  const occurrence = req.body;
+
+  if (!occurrence || typeof occurrence !== 'object') {
+    return res.status(400).json({ error: 'Request body must be a JSON occurrence object' });
+  }
+
+  // searchSequences is injected here so assignTaxonomyToOccurrence stays
+  // independent of the HTTP layer and is easier to test.
+  // It accepts a FASTA string and returns { [nucleotideSequenceID]: [matches] }.
+  async function searchSequences(fasta) {
+    const vsearchRes = await fetch(`${VSEARCH_URL}?outfmt=blast6out`, {
+      method: 'POST',
+      body: fasta,
+      headers: { 'Content-Type': 'text/plain' },
+    });
+    if (!vsearchRes.ok) {
+      const text = await vsearchRes.text();
+      throw new Error(`vsearch error ${vsearchRes.status}: ${text}`);
+    }
+    const text = await vsearchRes.text();
+    const sequences = parseFasta(fasta);
+    return parseBlast6out(text, sequences);
+  }
+
+  let classification;
+  try {
+    classification = await assignTaxonomyToOccurrence(occurrence, searchSequences);
+  } catch (err) {
+    console.error('Classification error:', err.message);
+    return res.status(502).json({ error: 'Classification failed', details: err.message });
+  }
+
+  if (classification === null) {
+    return res.status(204).end();
+  }
+
+  res.json(classification);
 });
 
 app.listen(PORT, () => {

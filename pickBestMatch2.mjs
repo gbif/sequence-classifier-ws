@@ -8,8 +8,8 @@
  *   ranking — e.g. geographic plausibility of a proposed species identification.
  * @returns {object|null}
  */
-export function pickBestMatch(queryId, matches, context) {
+export function pickBestMatch2(queryId, matches, context) {
   // TODO: implement ranking logic using identity, query coverage, reference
   // dataset priority, and optionally occurrence context (e.g. coordinates).
-  return matches[0] ?? null;
+  return matches[1] ?? null;
 }
