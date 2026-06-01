@@ -1,6 +1,11 @@
 import express from 'express';
+import { createRequire } from 'module';
 import { pickBestMatch } from './pickBestMatch.mjs';
 import { assignTaxonomyToOccurrence } from './assignTaxonomyToOccurrence.mjs';
+
+const _require = createRequire(import.meta.url);
+const cache = _require('./caches/index.js');
+const CACHE_DB = _require('./caches/config.js').CACHE.dataBaseName;
 
 const selectorCache = new Map();
 selectorCache.set('pickBestMatch', pickBestMatch);
@@ -224,6 +229,45 @@ async function vsearchQuery(fasta) {
   return parseBlast6out(text, parseFasta(fasta));
 }
 
+async function cacheLookup(id) {
+  try { return await cache.get(id, CACHE_DB); }
+  catch { return null; }
+}
+
+async function cacheWrite(id, matches) {
+  const top25 = [...matches]
+    .sort((a, b) => (b.identity - a.identity) || (b.qcovs - a.qcovs))
+    .slice(0, 25);
+  try { await cache.set(id, CACHE_DB, top25); }
+  catch { /* non-fatal */ }
+}
+
+async function vsearchQueryWithCache(fasta) {
+  const seqs = parseFasta(fasta);
+  const ids = Object.keys(seqs);
+
+  const lookups = await Promise.all(ids.map(async id => [id, await cacheLookup(id)]));
+  const matchesMap = {};
+  const missIds = [];
+  for (const [id, cached] of lookups) {
+    if (cached !== null) matchesMap[id] = cached;
+    else missIds.push(id);
+  }
+
+  if (missIds.length > 0) {
+    const missFasta = missIds.map(id => `>${id}\n${seqs[id]}`).join('\n');
+    const fresh = await vsearchQuery(missFasta);
+    await Promise.all(
+      Object.entries(fresh).map(async ([id, matches]) => {
+        await cacheWrite(id, matches);
+        matchesMap[id] = matches;
+      })
+    );
+  }
+
+  return matchesMap;
+}
+
 // ── POST /occurrence/classify ─────────────────────────────────────────────────
 //
 // Accept a single GBIF occurrence object (JSON), extract its nucleotide
@@ -248,7 +292,7 @@ app.post('/occurrence/classify', async (req, res) => {
 
   let classification;
   try {
-    classification = await assignTaxonomyToOccurrence(occurrence, vsearchQuery);
+    classification = await assignTaxonomyToOccurrence(occurrence, vsearchQueryWithCache);
   } catch (err) {
     console.error('Classification error:', err.message);
     return res.status(502).json({ error: 'Classification failed', details: err.message });
@@ -299,7 +343,7 @@ app.post('/occurrence/classify/batch', async (req, res) => {
   if (seqMap.size > 0) {
     const fasta = [...seqMap.entries()].map(([id, seq]) => `>${id}\n${seq}`).join('\n');
     try {
-      matchesMap = await vsearchQuery(fasta);
+      matchesMap = await vsearchQueryWithCache(fasta);
     } catch (err) {
       console.error('Batch vsearch error:', err.message);
       return res.status(502).json({ error: 'Could not reach vsearch server', details: err.message });
