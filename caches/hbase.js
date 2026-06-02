@@ -87,8 +87,10 @@ const get = async (nucleotideSequenceID, database) => {
     
 }
 
-connect()
-module.exports = {
-    set,
-    get
+const disconnect = () => {
+    connection?.removeAllListeners('close'); // prevent auto-reconnect on deliberate shutdown
+    connection?.end();
 };
+
+connect()
+module.exports = { get, set, disconnect };

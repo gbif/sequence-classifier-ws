@@ -15,4 +15,6 @@ const get = async (nucleotideSequenceID, database) => {
     return JSON.parse(value);
 };
 
-module.exports = { get, set };
+const disconnect = () => client.quit();
+
+module.exports = { get, set, disconnect };

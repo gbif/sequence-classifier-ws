@@ -20,7 +20,8 @@ async function loadSelector(name) {
   return fn;
 }
 
-const VSEARCH_URL = process.env.VSEARCH_URL || 'http://0.0.0.0:8000/search/batch';
+const VSEARCH_URL = process.env.VSEARCH_URL || 'http://127.0.0.1:8000/search/batch';
+const VSEARCH_TIMEOUT_MS = parseInt(process.env.VSEARCH_TIMEOUT_MS) || 30_000;
 const PORT = process.env.PORT || 3000;
 
 // Field order matches the 23-field pipe-separated FASTA header
@@ -190,9 +191,13 @@ app.post('/search/batch', async (req, res) => {
       method: 'POST',
       body,
       headers: { 'Content-Type': 'text/plain' },
+      signal: AbortSignal.timeout(VSEARCH_TIMEOUT_MS),
     });
   } catch (err) {
     console.error('Upstream error:', err.message);
+    if (err.name === 'TimeoutError') {
+      return res.status(504).json({ error: 'vsearch server timed out' });
+    }
     return res.status(502).json({ error: 'Could not reach vsearch server', details: err.message });
   }
 
@@ -220,6 +225,7 @@ async function vsearchQuery(fasta) {
     method: 'POST',
     body: fasta,
     headers: { 'Content-Type': 'text/plain' },
+    signal: AbortSignal.timeout(VSEARCH_TIMEOUT_MS),
   });
   if (!vsearchRes.ok) {
     const text = await vsearchRes.text();
@@ -268,6 +274,28 @@ async function vsearchQueryWithCache(fasta) {
   return matchesMap;
 }
 
+// ── GET /health ───────────────────────────────────────────────────────────────
+
+app.get('/health', async (req, res) => {
+  const vsearchHealthUrl = new URL('/health', VSEARCH_URL).href;
+
+  const [vsearchOk, cacheOk] = await Promise.all([
+    fetch(vsearchHealthUrl, { signal: AbortSignal.timeout(3000) })
+      .then(r => r.ok).catch(() => false),
+
+    cache.get('__health_check__', CACHE_DB)
+      .then(() => true)
+      .catch(err => err.message === 'Not found'),
+  ]);
+
+  const ok = vsearchOk && cacheOk;
+  res.status(ok ? 200 : 503).json({
+    status: ok ? 'ok' : 'degraded',
+    vsearch: vsearchOk ? 'ok' : 'error',
+    cache: cacheOk ? 'ok' : 'error',
+  });
+});
+
 // ── POST /occurrence/classify ─────────────────────────────────────────────────
 //
 // Accept a single GBIF occurrence object (JSON), extract its nucleotide
@@ -295,6 +323,9 @@ app.post('/occurrence/classify', async (req, res) => {
     classification = await assignTaxonomyToOccurrence(occurrence, vsearchQueryWithCache);
   } catch (err) {
     console.error('Classification error:', err.message);
+    if (err.name === 'TimeoutError') {
+      return res.status(504).json({ error: 'vsearch server timed out' });
+    }
     return res.status(502).json({ error: 'Classification failed', details: err.message });
   }
 
@@ -346,6 +377,9 @@ app.post('/occurrence/classify/batch', async (req, res) => {
       matchesMap = await vsearchQueryWithCache(fasta);
     } catch (err) {
       console.error('Batch vsearch error:', err.message);
+      if (err.name === 'TimeoutError') {
+        return res.status(504).json({ error: 'vsearch server timed out' });
+      }
       return res.status(502).json({ error: 'Could not reach vsearch server', details: err.message });
     }
   }
@@ -370,7 +404,23 @@ app.post('/occurrence/classify/batch', async (req, res) => {
   res.json(results);
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`vsearch proxy listening on http://localhost:${PORT}`);
   console.log(`Forwarding to ${VSEARCH_URL}`);
 });
+
+const shutdown = (signal) => {
+  console.log(`${signal} received, shutting down gracefully`);
+  server.close(async () => {
+    try { await cache.disconnect?.(); } catch {}
+    process.exit(0);
+  });
+  // Force exit if connections don't drain within 10 s
+  setTimeout(() => {
+    console.error('Shutdown timeout exceeded, forcing exit');
+    process.exit(1);
+  }, 10_000).unref();
+};
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT',  () => shutdown('SIGINT'));
