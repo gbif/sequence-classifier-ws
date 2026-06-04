@@ -35,7 +35,7 @@ Environment variables:
 | `POST /occurrence/classify` | Single occurrence (JSON) | `DnaClassification` or 204 |
 | `POST /occurrence/classify/batch` | `occurrence[]` (JSON) | `{ gbifID, classification }[]` |
 
-Query params for `/search/batch`: `outfmt=blast6out|alnout` (default `blast6out`), `selector=<name>` (default `pickBestMatch`).
+Query params for `/search/batch`: `outfmt=blast6out|alnout` (default `blast6out`).
 
 `/occurrence/classify/batch` deduplicates sequences across all occurrences before querying vsearch — one vsearch round-trip regardless of how many occurrences share the same sequence — then fans cached results back to each `assignTaxonomyToOccurrence` call.
 
@@ -52,7 +52,7 @@ vsearch blast6out results are parsed into match objects with these fields:
 
 The 23 FASTA header fields (in pipe order): `id`, `accessionNumber`, `scientificName`, `decimalLatitude`, `decimalLongitude`, `typeStatus`, `catalogueNumber`, `identifiedBy`, `taxonRank`, `country`, `locality`, `basisOfRecord`, `higherClassification`, `dataset`, `targetGene`, `domain`, `kingdom`, `phylum`, `class`, `order`, `family`, `genus`, `species`.
 
-## pickBestMatch selector
+## pickBestMatch
 
 `pickBestMatch.mjs` receives all vsearch hits for a single sequence and returns a ranked array of up to 5 matches, best first.
 
@@ -61,8 +61,6 @@ The 23 FASTA header fields (in pipe order): `id`, `accessionNumber`, `scientific
 Signature: `pickBestMatch(queryId, matches, context, topN = 5) → object[]`
 
 `context` carries occurrence-level fields (`decimalLatitude`, `decimalLongitude`, `gbifID`) for future context-sensitive ranking (e.g. geographic plausibility).
-
-To experiment with an alternative ranking strategy, add `pickBestMatchFoo.mjs` exporting a function `pickBestMatchFoo`, then call `/search/batch?selector=pickBestMatchFoo`. The server loads and caches the module on first use.
 
 ## assignTaxonomyToOccurrence
 
@@ -85,7 +83,7 @@ Connection config: `caches/config.js`.
 - `DRAGONFLY` — host/port for Dragonfly
 - `HBASE` — hosts, port, tableName for HBase
 
-The cache stores the top 25 vsearch hits per `nucleotideSequenceID`, pre-sorted by identity/qcovs. `pickBestMatch` selects from the cached hits — changing the selector does not require re-populating the cache.
+The cache stores the top 25 vsearch hits per `nucleotideSequenceID`, pre-sorted by identity/qcovs. `pickBestMatch` selects from the cached hits.
 
 Cache misses are non-fatal: if the cache is unreachable, all queries fall through to vsearch.
 

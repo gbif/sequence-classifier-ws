@@ -57,7 +57,6 @@ Configuration via environment variables:
 
 Query params:
 - `outfmt=blast6out|alnout` (default `blast6out`)
-- `selector=<name>` (default `pickBestMatch`) — swap in an alternative ranking function
 
 ### `POST /occurrence/classify`
 
@@ -76,17 +75,6 @@ Sequences are deduplicated across all occurrences before querying vsearch, so a 
 **`pickBestMatch.mjs`** ranks vsearch hits for a single sequence and returns the top 5. Current rule: sort by `identity` descending, then query coverage (`qcovs`) descending as a tiebreaker.
 
 **`assignTaxonomyToOccurrence.mjs`** compiles a single classification from all sequences in an occurrence. Current rule: when sequences disagree, the one with the highest identity match wins. More sophisticated reconciliation rules will be added here — for example, using multi-marker agreement to resolve ties (if two sequences point to different species but a second gene independently confirms one of them, that species is preferred).
-
-### Experimenting with alternative ranking
-
-Add a file `pickBestMatchFoo.mjs` exporting a function `pickBestMatchFoo`, then call:
-
-```bash
-curl -X POST http://localhost:3000/search/batch?selector=pickBestMatchFoo \
-  -H 'Content-Type: text/plain' --data-binary @sequences.fasta
-```
-
-The server loads and caches the module on first use — no restart needed.
 
 ## Caching
 

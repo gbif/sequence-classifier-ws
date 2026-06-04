@@ -7,19 +7,6 @@ const _require = createRequire(import.meta.url);
 const cache = _require('./caches/index.js');
 const CACHE_DB = _require('./caches/config.js').CACHE.dataBaseName;
 
-const selectorCache = new Map();
-selectorCache.set('pickBestMatch', pickBestMatch);
-
-async function loadSelector(name) {
-  if (selectorCache.has(name)) return selectorCache.get(name);
-  if (!/^\w+$/.test(name)) throw new Error(`Invalid selector name: ${name}`);
-  const mod = await import(new URL(`./${name}.mjs`, import.meta.url));
-  const fn = mod[name];
-  if (typeof fn !== 'function') throw new Error(`Module ${name}.mjs does not export a function named '${name}'`);
-  selectorCache.set(name, fn);
-  return fn;
-}
-
 const VSEARCH_URL = process.env.VSEARCH_URL || 'http://127.0.0.1:8000/search/batch';
 const VSEARCH_TIMEOUT_MS = parseInt(process.env.VSEARCH_TIMEOUT_MS) || 30_000;
 const PORT = process.env.PORT || 3000;
@@ -172,14 +159,6 @@ app.post('/search/batch', async (req, res) => {
     return res.status(400).json({ error: `Unknown outfmt: ${outfmt}` });
   }
 
-  const selectorName = req.query.selector || 'pickBestMatch';
-  let selector;
-  try {
-    selector = await loadSelector(selectorName);
-  } catch (err) {
-    return res.status(400).json({ error: err.message });
-  }
-
   const body = req.body;
   if (!body) return res.status(400).json({ error: 'No FASTA body provided' });
 
@@ -212,7 +191,7 @@ app.post('/search/batch', async (req, res) => {
     : parseAlnout(text, sequences);
 
   const result = Object.fromEntries(
-    Object.entries(parsed).map(([queryId, matches]) => [queryId, selector(queryId, matches)])
+    Object.entries(parsed).map(([queryId, matches]) => [queryId, pickBestMatch(queryId, matches)])
   );
 
   res.json(result);
