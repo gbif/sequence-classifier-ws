@@ -28,7 +28,7 @@ Start the server against a pre-built reference UDB:
 ```bash
 vsearch --threads 8 --usearch_global_server \
   --db /path/to/gbif_dna_taxonomy_annotation.udb \
-  --id 0.9 --query_cov 0.5 \
+  --id 0.9 --query_cov 0.5 --n_mismatch \
   --maxaccepts 1000 --maxrejects 1000 --maxhits 100 \
   --port 8000 --temp_file_path ~/temp-vsearch
 ```
