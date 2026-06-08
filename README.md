@@ -46,7 +46,7 @@ Configuration via environment variables:
 |---|---|---|
 | `PORT` | `3000` | Listening port |
 | `VSEARCH_URL` | `http://0.0.0.0:8000/search/batch` | vsearch server URL |
-| `CACHE` | `dragonfly` | Cache backend: `dragonfly` or `hbase` |
+| `CACHE` | `dragonfly` | Cache backend: `dragonfly`, `hbase`, or `none` (no cache) |
 
 ## Endpoints
 
@@ -83,6 +83,7 @@ Match results are cached by `nucleotideSequenceID` so repeated lookups for the s
 ```bash
 CACHE=dragonfly npm start   # default — requires Dragonfly on localhost:6379
 CACHE=hbase npm start       # Apache HBase via Thrift
+CACHE=none npm start        # no cache — every query goes straight to vsearch
 ```
 
 To run Dragonfly locally with Docker:

@@ -9,7 +9,7 @@ Requires vsearch running in server mode (built from the GBIF fork, `batch-reques
 ```bash
 vsearch --threads 8 --usearch_global_server \
   --db /path/to/gbif_dna_taxonomy_annotation.udb \
-  --id 0.9 --query_cov 0.5 \
+  --id 0.9 --query_cov 0.5 --n_mismatch \
   --maxaccepts 1000 --maxrejects 1000 --maxhits 100 \
   --port 8000 --temp_file_path ~/temp-vsearch
 ```
@@ -25,7 +25,7 @@ npm start
 Environment variables:
 - `PORT` — listening port (default 3000)
 - `VSEARCH_URL` — vsearch server URL (default `http://0.0.0.0:8000/search/batch`)
-- `CACHE` — cache backend: `dragonfly` (default) or `hbase`
+- `CACHE` — cache backend: `dragonfly` (default), `hbase`, or `none` (no cache)
 
 ## Endpoints
 
@@ -77,6 +77,7 @@ All cache calls route through `caches/index.js` — the single swap point. To ch
 Available backends:
 - `caches/dragonfly.js` — Redis-compatible, uses `redis` npm package, default host `127.0.0.1:6379`
 - `caches/hbase.js` — Apache HBase via Thrift, connects to GBIF cluster hosts
+- `caches/none.js` — no-op: every lookup misses (straight to vsearch), writes discarded, no connections opened
 
 Connection config: `caches/config.js`.
 - `CACHE.dataBaseName` — namespace used as a key prefix (Dragonfly) or column filter (HBase)
