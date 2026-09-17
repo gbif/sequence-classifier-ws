@@ -5,7 +5,7 @@
   "description": "Express proxy for the vsearch batch search server with 23-field FASTA header parsing",
   "main": "index.mjs",
   "scripts": {
-    "start": "node index.mjs",
+    "start": "node --env-file-if-exists=.env index.mjs",
     "test": "node --test test/*.test.mjs"
   },
   "dependencies": {

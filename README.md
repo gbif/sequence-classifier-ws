@@ -45,8 +45,17 @@ Configuration via environment variables:
 | Variable | Default | Description |
 |---|---|---|
 | `PORT` | `3000` | Listening port |
-| `VSEARCH_URL` | `http://0.0.0.0:8000/search/batch` | vsearch server URL |
+| `VSEARCH_URL` | `http://127.0.0.1:8000/search/batch` | vsearch server URL |
+| `VSEARCH_TIMEOUT_MS` | `30000` | How long to wait for vsearch before giving up |
 | `CACHE` | `dragonfly` | Cache backend: `dragonfly`, `hbase`, or `none` (no cache) |
+
+`npm start` reads a `.env` file in the project root if one is present — copy
+`.env.example` to `.env` and edit. Real environment variables take precedence over
+anything in `.env`, so a value exported in your shell or injected by an orchestrator
+wins. Running without a `.env` is fine; the file is optional.
+
+`CACHE` is read once at startup and cannot be changed while the server runs. Connection
+details for the `dragonfly` and `hbase` backends live in `caches/config.js`.
 
 ## Endpoints
 
@@ -69,6 +78,157 @@ Query params:
 **Response**: `{ gbifID, classification }[]` — one entry per input occurrence
 
 Sequences are deduplicated across all occurrences before querying vsearch, so a sequence shared by many occurrences incurs only one vsearch lookup. Results are cached so repeated batches return quickly without hitting vsearch again.
+
+### `GET /health`
+
+Readiness probe. Checks the upstream vsearch server (3 s timeout) and the cache backend
+in parallel.
+
+**Response**: `200` when both are reachable, `503` when either is not.
+
+```json
+{ "status": "ok", "vsearch": "ok", "cache": "ok" }
+```
+
+A failing component is reported individually, so a `503` body tells you which one is
+down:
+
+```json
+{ "status": "degraded", "vsearch": "ok", "cache": "error" }
+```
+
+## Examples
+
+The sequences and occurrences below are real records from `test-data/`, so these
+commands run as-is against a local server.
+
+### Search a FASTA batch
+
+```bash
+curl -s -X POST http://localhost:3000/search/batch \\
+  -H 'Content-Type: text/plain' --data-binary @query.fasta
+```
+
+where `query.fasta` holds one or more sequences — the body limit is 50 MB:
+
+```
+>a82cd5f9ca4f26b427c37342c5e4b7de
+GAAACTAACAAGGATTCCCCTAGTAACTGCGAGTGAAGCGGGAAAAGCTCAAATTTAAAA
+TCTGTCAGCCTTGGCTGTCCGAGTTGTAATCTAGAGAAGCGTTATCCGCGCTGGACCGTG
+TACAAGTCTCCTGGAATGGAGCGTCATAGAGGGTGAGAATCCCGTCTTTGACACGGACTG
+CCAGGGCTTTGTGATGCGCTCTCAAAGAGTCGAGTTGTTTGGGAATGCAGCTCAAAATGG
+GTGGTAAATTCCATCTAAAGCTAAATATTGGCGAGAGACCGATAGCGAACAAGTACCGTG
+AGGGAAAGATGAAAAGAACTTTGGAAAGAGAGTTAAACAGTACGTGAAATTGCTGAAAGG
+GAAACGCTTGAAGTCAGTCGCGTTGTCCAGGGATCAACCTTGCTTTTGCTTGGTGTACTT
+TCTGGTTGACGGGTCAGCATCAATTTTGACTATTGGAAAAAGGTCAGGGGAATGTGGCAT
+CTTCGGATGTGTTATAGCCCTTGGTTGCATACAATGGTTGGGATTGAGGAACTCAGCACG
+CCGCAAGGCCGGGTTTTTAACCACGTACGTGCTTAGGATGCTGGCATAATGGCTTTAATC
+GACCCGTCTTGAAACACGGACCAAGGAGTCTAACATGCCTGCGAGTGTTTGGGTGGAAAA
+CCCGAGCGCGTAATGAAAGTGAAAGTTGAGATCCCTGTCGTGGGGAGCATCGACGCCCGG
+ACCAGACCTTTTGTGACGGTTCCGCGGTAGAGCATGTATGTTGGGACCCGAAAGATGGTG
+AACTATGCCTGAATAGGGTGAAGCCAGAGGAAACTCTGGTGGAGGCTCGTAGCGATTCTG
+ACGTGCAAATCGATCGTCAAATTTGGGTATAGGGGCGAAAGACTAATCGAACCATCTA
+```
+
+The response is keyed by the FASTA query ID, with up to 5 matches ranked by identity
+then query coverage. Each match carries all 23 reference header fields plus the vsearch
+alignment columns; abbreviated here:
+
+```json
+{
+  "a82cd5f9ca4f26b427c37342c5e4b7de": [
+    {
+      "scientificName": "Cortinarius saginus",
+      "taxonRank": "species",
+      "dataset": "unite its",
+      "targetGene": "its region",
+      "identity": 98.1,
+      "qcovs": 68.6
+    }
+  ]
+}
+```
+
+The full field list per match is: `id`, `accessionNumber`, `scientificName`,
+`decimalLatitude`, `decimalLongitude`, `typeStatus`, `catalogueNumber`, `identifiedBy`,
+`taxonRank`, `country`, `locality`, `basisOfRecord`, `higherClassification`, `dataset`,
+`targetGene`, `domain`, `kingdom`, `phylum`, `class`, `order`, `family`, `genus`,
+`species`, `identity`, `alignmentLength`, `mismatches`, `gapOpenings`, `qstart`, `qend`,
+`sstart`, `send`, `evalue`, `bitScore`, `qcovs`.
+
+A query with no match above the server's identity threshold is simply absent from the
+response, so `{}` is a valid answer meaning "nothing matched".
+
+Use `?outfmt=alnout` for vsearch alignment output instead of the default `blast6out`.
+
+### Classify one occurrence
+
+```bash
+jq '.[0]' test-data/multi_seq_occurrences.json \
+  | curl -s -X POST http://localhost:3000/occurrence/classify \
+      -H 'Content-Type: application/json' --data-binary @-
+```
+
+Returns a `DnaClassification`, or `204 No Content` if the occurrence had no sequences
+or nothing matched. `remarks` records which sequences matched, at what identity and
+coverage, and which one the classification came from:
+
+```json
+{
+  "scientificName": "Cortinarius cesarioanus A. R. Nilsen & Orlovich, 2021",
+  "taxonRank": "species",
+  "kingdom": "Fungi",
+  "phylum": "Basidiomycota",
+  "class": "Agaricomycetes",
+  "order": "Agaricales",
+  "family": "Cortinariaceae",
+  "genus": "Cortinarius",
+  "species": "Cortinarius cesarioanus",
+  "remarks": "2 sequence(s) matched; selected highest identity (100%) from refseq its (ITS region, seqID=dee481ca728cf22a3c2c4c4dfbb8e83b); all matches: [a82cd5f9ca4f26b427c37342c5e4b7de: dataset=unite its gene=its region identity=98.1 qcovs=68.6; dee481ca728cf22a3c2c4c4dfbb8e83b: dataset=refseq its gene=ITS region identity=100 qcovs=100]"
+}
+```
+
+### Classify a batch of occurrences
+
+```bash
+jq '.[0:5]' test-data/multi_seq_occurrences.json \
+  | curl -s -X POST http://localhost:3000/occurrence/classify/batch \
+      -H 'Content-Type: application/json' --data-binary @-
+```
+
+One entry per input occurrence, in input order:
+
+```json
+[
+  {
+    "gbifID": 1038306167,
+    "classification": {
+      "scientificName": "Cortinarius cesarioanus A. R. Nilsen & Orlovich, 2021",
+      "taxonRank": "species",
+      "kingdom": "Fungi",
+      "phylum": "Basidiomycota",
+      "class": "Agaricomycetes",
+      "order": "Agaricales",
+      "family": "Cortinariaceae",
+      "genus": "Cortinarius",
+      "species": "Cortinarius cesarioanus",
+      "remarks": "2 sequence(s) matched; selected highest identity (100%) from refseq its (ITS region, seqID=dee481ca728cf22a3c2c4c4dfbb8e83b); all matches: [a82cd5f9ca4f26b427c37342c5e4b7de: dataset=unite its gene=its region identity=98.1 qcovs=68.6; dee481ca728cf22a3c2c4c4dfbb8e83b: dataset=refseq its gene=ITS region identity=100 qcovs=100]"
+    }
+  }
+]
+```
+
+(one element shown; the array has one entry per input occurrence)
+
+`test-data/multi_seq_occurrences.json` holds 500 occurrences with 2-4 sequences each;
+`test-data/rbcL-occurrences.json` is a plant-marker set. Drop the `jq` filter to send a
+whole file. The JSON body limit is 10 MB.
+
+### Check health
+
+```bash
+curl -s http://localhost:3000/health | jq
+```
 
 ## Ranking and classification logic
 
