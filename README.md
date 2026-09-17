@@ -102,64 +102,6 @@ down:
 The sequences and occurrences below are real records from `test-data/`, so these
 commands run as-is against a local server.
 
-### Search a FASTA batch
-
-```bash
-curl -s -X POST http://localhost:3000/search/batch \\
-  -H 'Content-Type: text/plain' --data-binary @query.fasta
-```
-
-where `query.fasta` holds one or more sequences — the body limit is 50 MB:
-
-```
->a82cd5f9ca4f26b427c37342c5e4b7de
-GAAACTAACAAGGATTCCCCTAGTAACTGCGAGTGAAGCGGGAAAAGCTCAAATTTAAAA
-TCTGTCAGCCTTGGCTGTCCGAGTTGTAATCTAGAGAAGCGTTATCCGCGCTGGACCGTG
-TACAAGTCTCCTGGAATGGAGCGTCATAGAGGGTGAGAATCCCGTCTTTGACACGGACTG
-CCAGGGCTTTGTGATGCGCTCTCAAAGAGTCGAGTTGTTTGGGAATGCAGCTCAAAATGG
-GTGGTAAATTCCATCTAAAGCTAAATATTGGCGAGAGACCGATAGCGAACAAGTACCGTG
-AGGGAAAGATGAAAAGAACTTTGGAAAGAGAGTTAAACAGTACGTGAAATTGCTGAAAGG
-GAAACGCTTGAAGTCAGTCGCGTTGTCCAGGGATCAACCTTGCTTTTGCTTGGTGTACTT
-TCTGGTTGACGGGTCAGCATCAATTTTGACTATTGGAAAAAGGTCAGGGGAATGTGGCAT
-CTTCGGATGTGTTATAGCCCTTGGTTGCATACAATGGTTGGGATTGAGGAACTCAGCACG
-CCGCAAGGCCGGGTTTTTAACCACGTACGTGCTTAGGATGCTGGCATAATGGCTTTAATC
-GACCCGTCTTGAAACACGGACCAAGGAGTCTAACATGCCTGCGAGTGTTTGGGTGGAAAA
-CCCGAGCGCGTAATGAAAGTGAAAGTTGAGATCCCTGTCGTGGGGAGCATCGACGCCCGG
-ACCAGACCTTTTGTGACGGTTCCGCGGTAGAGCATGTATGTTGGGACCCGAAAGATGGTG
-AACTATGCCTGAATAGGGTGAAGCCAGAGGAAACTCTGGTGGAGGCTCGTAGCGATTCTG
-ACGTGCAAATCGATCGTCAAATTTGGGTATAGGGGCGAAAGACTAATCGAACCATCTA
-```
-
-The response is keyed by the FASTA query ID, with up to 5 matches ranked by identity
-then query coverage. Each match carries all 23 reference header fields plus the vsearch
-alignment columns; abbreviated here:
-
-```json
-{
-  "a82cd5f9ca4f26b427c37342c5e4b7de": [
-    {
-      "scientificName": "Cortinarius saginus",
-      "taxonRank": "species",
-      "dataset": "unite its",
-      "targetGene": "its region",
-      "identity": 98.1,
-      "qcovs": 68.6
-    }
-  ]
-}
-```
-
-The full field list per match is: `id`, `accessionNumber`, `scientificName`,
-`decimalLatitude`, `decimalLongitude`, `typeStatus`, `catalogueNumber`, `identifiedBy`,
-`taxonRank`, `country`, `locality`, `basisOfRecord`, `higherClassification`, `dataset`,
-`targetGene`, `domain`, `kingdom`, `phylum`, `class`, `order`, `family`, `genus`,
-`species`, `identity`, `alignmentLength`, `mismatches`, `gapOpenings`, `qstart`, `qend`,
-`sstart`, `send`, `evalue`, `bitScore`, `qcovs`.
-
-A query with no match above the server's identity threshold is simply absent from the
-response, so `{}` is a valid answer meaning "nothing matched".
-
-Use `?outfmt=alnout` for vsearch alignment output instead of the default `blast6out`.
 
 ### Classify one occurrence
 
@@ -223,6 +165,65 @@ One entry per input occurrence, in input order:
 `test-data/multi_seq_occurrences.json` holds 500 occurrences with 2-4 sequences each;
 `test-data/rbcL-occurrences.json` is a plant-marker set. Drop the `jq` filter to send a
 whole file. The JSON body limit is 10 MB.
+
+### Search a FASTA batch
+
+```bash
+curl -s -X POST http://localhost:3000/search/batch \\
+  -H 'Content-Type: text/plain' --data-binary @query.fasta
+```
+
+where `query.fasta` holds one or more sequences — the body limit is 50 MB:
+
+```
+>a82cd5f9ca4f26b427c37342c5e4b7de
+GAAACTAACAAGGATTCCCCTAGTAACTGCGAGTGAAGCGGGAAAAGCTCAAATTTAAAA
+TCTGTCAGCCTTGGCTGTCCGAGTTGTAATCTAGAGAAGCGTTATCCGCGCTGGACCGTG
+TACAAGTCTCCTGGAATGGAGCGTCATAGAGGGTGAGAATCCCGTCTTTGACACGGACTG
+CCAGGGCTTTGTGATGCGCTCTCAAAGAGTCGAGTTGTTTGGGAATGCAGCTCAAAATGG
+GTGGTAAATTCCATCTAAAGCTAAATATTGGCGAGAGACCGATAGCGAACAAGTACCGTG
+AGGGAAAGATGAAAAGAACTTTGGAAAGAGAGTTAAACAGTACGTGAAATTGCTGAAAGG
+GAAACGCTTGAAGTCAGTCGCGTTGTCCAGGGATCAACCTTGCTTTTGCTTGGTGTACTT
+TCTGGTTGACGGGTCAGCATCAATTTTGACTATTGGAAAAAGGTCAGGGGAATGTGGCAT
+CTTCGGATGTGTTATAGCCCTTGGTTGCATACAATGGTTGGGATTGAGGAACTCAGCACG
+CCGCAAGGCCGGGTTTTTAACCACGTACGTGCTTAGGATGCTGGCATAATGGCTTTAATC
+GACCCGTCTTGAAACACGGACCAAGGAGTCTAACATGCCTGCGAGTGTTTGGGTGGAAAA
+CCCGAGCGCGTAATGAAAGTGAAAGTTGAGATCCCTGTCGTGGGGAGCATCGACGCCCGG
+ACCAGACCTTTTGTGACGGTTCCGCGGTAGAGCATGTATGTTGGGACCCGAAAGATGGTG
+AACTATGCCTGAATAGGGTGAAGCCAGAGGAAACTCTGGTGGAGGCTCGTAGCGATTCTG
+ACGTGCAAATCGATCGTCAAATTTGGGTATAGGGGCGAAAGACTAATCGAACCATCTA
+```
+
+The response is keyed by the FASTA query ID, with up to 5 matches ranked by identity
+then query coverage. Each match carries all 23 reference header fields plus the vsearch
+alignment columns; abbreviated here:
+
+```json
+{
+  "a82cd5f9ca4f26b427c37342c5e4b7de": [
+    {
+      "scientificName": "Cortinarius saginus",
+      "taxonRank": "species",
+      "dataset": "unite its",
+      "targetGene": "its region",
+      "identity": 98.1,
+      "qcovs": 68.6
+    }
+  ]
+}
+```
+
+The full field list per match is: `id`, `accessionNumber`, `scientificName`,
+`decimalLatitude`, `decimalLongitude`, `typeStatus`, `catalogueNumber`, `identifiedBy`,
+`taxonRank`, `country`, `locality`, `basisOfRecord`, `higherClassification`, `dataset`,
+`targetGene`, `domain`, `kingdom`, `phylum`, `class`, `order`, `family`, `genus`,
+`species`, `identity`, `alignmentLength`, `mismatches`, `gapOpenings`, `qstart`, `qend`,
+`sstart`, `send`, `evalue`, `bitScore`, `qcovs`.
+
+A query with no match above the server's identity threshold is simply absent from the
+response, so `{}` is a valid answer meaning "nothing matched".
+
+Use `?outfmt=alnout` for vsearch alignment output instead of the default `blast6out`.
 
 ### Check health
 
