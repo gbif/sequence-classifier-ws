@@ -7,6 +7,10 @@ const _require = createRequire(import.meta.url);
 const cache = _require('./caches/index.js');
 const CACHE_DB = _require('./caches/config.js').CACHE.dataBaseName;
 
+// Mirrors the selection in caches/index.js, which is what actually loads the
+// module. Kept here so startup and health logging can name the active backend.
+const CACHE_BACKEND = process.env.CACHE || 'dragonfly';
+
 const VSEARCH_URL = process.env.VSEARCH_URL || 'http://127.0.0.1:8000/search/batch';
 const VSEARCH_TIMEOUT_MS = parseInt(process.env.VSEARCH_TIMEOUT_MS) || 30_000;
 const PORT = process.env.PORT || 3000;
@@ -255,23 +259,50 @@ async function vsearchQueryWithCache(fasta) {
 
 // ── GET /health ───────────────────────────────────────────────────────────────
 
+// Probes are typically scraped every few seconds, so log on transition rather
+// than on every poll: one line when a dependency starts failing, one when it
+// recovers. Null until the first probe, so the first result is always logged.
+let lastHealthStatus = null;
+
 app.get('/health', async (req, res) => {
   const vsearchHealthUrl = new URL('/health', VSEARCH_URL).href;
 
-  const [vsearchOk, cacheOk] = await Promise.all([
+  const [vsearch, cacheState] = await Promise.all([
     fetch(vsearchHealthUrl, { signal: AbortSignal.timeout(3000) })
-      .then(r => r.ok).catch(() => false),
+      .then(r => (r.ok ? { ok: true } : { ok: false, reason: `HTTP ${r.status}` }))
+      .catch(err => ({ ok: false, reason: err.message })),
 
     cache.get('__health_check__', CACHE_DB)
-      .then(() => true)
-      .catch(err => err.message === 'Not found'),
+      .then(() => ({ ok: true }))
+      .catch(err => {
+        // The backends reject with a bare string, not an Error, so err.message
+        // is undefined — reading it was reporting a healthy cache as failed.
+        const reason = err instanceof Error ? err.message : String(err);
+        // 'Not found' means the backend answered and the probe key simply is
+        // not there, which is a healthy cache rather than a failure.
+        return reason === 'Not found' ? { ok: true } : { ok: false, reason };
+      }),
   ]);
 
-  const ok = vsearchOk && cacheOk;
+  const ok = vsearch.ok && cacheState.ok;
+  const status = ok ? 'ok' : 'degraded';
+
+  if (status !== lastHealthStatus) {
+    if (ok) {
+      console.log(`Health ok — vsearch ${vsearchHealthUrl}, cache ${CACHE_BACKEND}`);
+    } else {
+      const failed = [];
+      if (!vsearch.ok)    failed.push(`vsearch ${vsearchHealthUrl}: ${vsearch.reason}`);
+      if (!cacheState.ok) failed.push(`cache ${CACHE_BACKEND}: ${cacheState.reason}`);
+      console.error(`Health degraded — ${failed.join('; ')}`);
+    }
+    lastHealthStatus = status;
+  }
+
   res.status(ok ? 200 : 503).json({
-    status: ok ? 'ok' : 'degraded',
-    vsearch: vsearchOk ? 'ok' : 'error',
-    cache: cacheOk ? 'ok' : 'error',
+    status,
+    vsearch: vsearch.ok ? 'ok' : 'error',
+    cache: cacheState.ok ? 'ok' : 'error',
   });
 });
 
@@ -386,6 +417,7 @@ app.post('/occurrence/classify/batch', async (req, res) => {
 const server = app.listen(PORT, () => {
   console.log(`vsearch proxy listening on http://localhost:${PORT}`);
   console.log(`Forwarding to ${VSEARCH_URL}`);
+  console.log(`Cache backend: ${CACHE_BACKEND}`);
 });
 
 const shutdown = (signal) => {
