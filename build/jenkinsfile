@@ -1,0 +1,149 @@
+// --- Pipeline for test and building the sequence-classifier ws also known as vsearch proxy ---
+pipeline {
+    agent any
+
+    options {
+        // Prevents two main builds from computing the same next version at the same time
+        disableConcurrentBuilds()
+        timestamps()
+    }
+
+    parameters {
+        // First option is the default. Ignored on non-main branches.
+        choice(
+            name: 'RELEASE_TYPE',
+            choices: ['patch', 'minor', 'major'],
+            description: 'Main branch only: which part of the version to bump.'
+        )
+    }
+
+    environment {
+        REGISTRY   = 'docker.gbif.org'
+        IMAGE_NAME = 'edna/sequence-classifier'
+        IMAGE_REPO = "${REGISTRY}/${IMAGE_NAME}"
+    }
+
+    stages {
+        stage('Create version tag') {
+            steps {
+                script {
+                    // Make sure we see all release tags, not just what the checkout fetched
+                    sh 'git fetch --tags --force'
+
+                    def latestTag = sh(
+                        script: "git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n 1",
+                        returnStdout: true
+                    ).trim() ?: 'v0.0.0'
+
+                    def (major, minor, patch) = latestTag.substring(1).tokenize('.').collect { it.toInteger() }
+
+                    env.IS_RELEASE = (env.BRANCH_NAME == 'main') ? 'true' : 'false'
+
+                    if (env.IS_RELEASE == 'true') {
+                        // ---- Release: bump version ----
+                        switch (params.RELEASE_TYPE) {
+                            case 'major':
+                                major += 1; minor = 0; patch = 0
+                                break
+                            case 'minor':
+                                minor += 1; patch = 0
+                                break
+                            default: // 'patch' (also the fallback on the very first run)
+                                patch += 1
+                        }
+                        env.VERSION = "${major}.${minor}.${patch}"
+                        env.IMAGE_TAGS = "${env.VERSION},latest"
+                    } else {
+                        // ---- Snapshot: no bump, tag must be unique per branch ----
+                        // Docker tags allow [A-Za-z0-9_.-], max 128 chars, can't start with '.' or '-'
+                        def slug = env.BRANCH_NAME.toLowerCase()
+                                       .replaceAll(/[^a-z0-9]+/, '-')
+                                       .replaceAll(/^-+|-+$/, '')
+                        slug = slug.take(40)
+
+                        // Short hash of the *raw* branch name so 'feature/a-b' and 'feature-a-b'
+                        // (which slugify identically) still get different tags
+                        def branchHash = sh(
+                            script: 'printf %s "$BRANCH_NAME" | sha1sum | cut -c1-6',
+                            returnStdout: true
+                        ).trim()
+
+                        def nextPatch = "${major}.${minor}.${patch + 1}"
+                        env.VERSION = "${nextPatch}-SNAPSHOT-${slug}-${branchHash}-${env.BUILD_NUMBER}"
+                        env.IMAGE_TAGS = env.VERSION
+                    }
+
+                    currentBuild.displayName = "#${env.BUILD_NUMBER} ${env.VERSION}"
+                    echo "Release build: ${env.IS_RELEASE}, version: ${env.VERSION}, tags: ${env.IMAGE_TAGS}"
+                }
+            }
+        }
+
+        stage('Running tests') {
+            steps {
+                sh "docker build --target test -t ${env.IMAGE_REPO}:test-${env.BUILD_NUMBER} ."
+            }
+            post {
+                always {
+                    script {
+                        // Clean up test images
+                        sh "docker rmi ${env.IMAGE_REPO}:test-${env.BUILD_NUMBER} || true"
+                    }
+                }
+            }
+        }
+
+        stage('Build image') {
+            steps {
+                script {
+                    // Builds the final image if test passed
+                    sh """
+                        docker build \
+                            -t ${env.IMAGE_REPO}:${env.VERSION} .
+                    """
+                    env.IMAGE_TAGS.tokenize(',').each { tag ->
+                        if (tag != env.VERSION) {
+                            sh "docker tag ${env.IMAGE_REPO}:${env.VERSION} ${env.IMAGE_REPO}:${tag}"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Push image') {
+            steps {
+                script {
+                    env.IMAGE_TAGS.tokenize(',').each { tag ->
+                        sh "docker push ${env.IMAGE_REPO}:${tag}"
+                    }
+                }
+            }
+        }
+
+        stage('Tag release in git') {
+            when { expression { env.IS_RELEASE == 'true' } }
+            steps {
+                sh """
+                    git tag -a v${env.VERSION} -m "Release ${env.VERSION}"
+                    git push origin v${env.VERSION}
+                """
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                // Clean up local images related to this specific job
+                // Ignores if cleanup fails
+                (env.IMAGE_TAGS ?: '').tokenize(',').each { tag ->
+                    sh "docker rmi ${env.IMAGE_REPO}:${tag} || true"
+                }
+            }
+        }
+        cleanup {
+            // Clean up workspace
+            cleanWs()
+        }
+    }
+}

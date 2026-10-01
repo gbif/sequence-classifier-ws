@@ -1,0 +1,28 @@
+FROM node:26-alpine AS base
+
+WORKDIR /app
+
+# Copy manifests first so this layer is cached
+COPY package*.json ./
+# Copy source
+COPY caches ./caches
+COPY *.mjs .
+
+# ---- Test the app ----
+FROM base AS test
+RUN npm test
+
+# ---- Build the app ----
+FROM base AS build
+RUN npm run build && npm prune --omit=dev
+
+FROM node:26-alpine AS runtime
+WORKDIR /app
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/node_modules ./node_modules
+# use non-root user
+USER node
+
+ENV NODE_ENV=dev
+EXPOSE 3000
+CMD ["npm", "start"]
