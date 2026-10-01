@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "helpers.releaseName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+{{- include "helpers.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+{{- include "helpers.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+{{- with .Values.podAnnotations }}
+      annotations:
+{{- toYaml . | nindent 8 }}
+{{- end }}
+      labels:
+{{- include "helpers.selectorLabels" . | nindent 8 }}
+{{- if .Values.yunikorn.enabled }}
+{{- include "helpers.yunikornLabels" . | nindent 8 }}
+{{- end }}
+    spec:
+{{- if (or .Values.nodeAffinity .Values.podAntiAffinity)}}
+      affinity:
+{{- with .Values.nodeAffinity }}
+        nodeAffinity:
+{{- toYaml . | nindent 10 }}
+{{- end }}
+{{- with .Values.podAntiAffinity }}
+        podAntiAffinity:
+{{- toYaml . | nindent 10 }}
+{{- end }}
+{{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}{{ .Values.image.name }}:{{ default .Chart.AppVersion .Values.image.tag }}"
+          #imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
+          args:
+            - |
+              date
+              npm start
+          command:
+          - /bin/sh
+          - -x
+          - -euo
+          - pipefail
+          - -c
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          envFrom:
+          - configMapRef:
+              name: {{ include "helpers.releaseName" . }}-conf
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

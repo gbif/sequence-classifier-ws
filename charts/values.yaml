@@ -1,0 +1,100 @@
+replicaCount: 1
+
+# Repository for where to get the image
+image:
+  repository: your-repository
+  tag: 0.0.5
+  name: sequence-classifier
+
+# Resources for the builder container
+resources:
+  requests:
+    memory: 8Gi
+    cpu: 1
+  limits:
+    memory: 8Gi
+    cpu: 2
+ 
+# If an ingress should be created
+ingress:
+  enabled: false
+  # Base of the ingress so you can provide a different base url than normal
+  base: sequence-classifier
+
+  # Domain to create the ingress entry with
+  domain: some-domain.org
+
+# port number to expose
+service: 
+  port: 3000
+  targetPort: 3000
+  nodePort: 31300
+
+# Node selector
+nodeSelector: 
+
+# Probe settings
+startup:
+  failureThreshold: 30
+  initialDelaySeconds: 300
+  periodSeconds: 30
+  timeoutSeconds: 15
+  
+liveness:
+  failureThreshold: 15
+  initialDelaySeconds: 30
+  periodSeconds: 60
+  timeoutSeconds: 30
+
+readiness:
+  failureThreshold: 30
+  initialDelaySeconds: 300
+  periodSeconds: 30
+  timeoutSeconds: 5
+
+# Node affinity
+nodeAffinity:
+
+# Pod anti affinity
+podAntiAffinity:
+  preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/name: vsearch
+        topologyKey: kubernetes.io/hostname
+
+
+# Annotation for the builder pod
+podAnnotations:
+
+# If the builder pod should use yunikorn
+yunikorn:
+  enabled: false
+  # Name of the overall application for all the pods within the queue
+  appId: "sequence-classifier-ws"
+  # Queue to place the pods in
+  queue: "root.namespace"
+
+# Cache type
+# Valid values: none, hbase, dragonfly
+cache: none
+
+#Configuration for hbase cache
+hbase: 
+  url:
+  port:
+  table:
+
+#Configuration for dragonfly cache
+dragonfly:
+  url:
+  port:
+
+#Configuration for the vsearch instance
+vsearch:
+  url: "localhost:8080"
+
+#Name of the table for the cache
+dbName: sequenceCache

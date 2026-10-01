@@ -17,14 +17,15 @@ const connect = () =>{
          connect()
     })
     connection.on('connect', function() {
+        //console.log(`Looking for table ${config.tableName}`);
         client.getTableNames(function(err,data) {
           if (err) {
             console.log('get table names error:', err);
           } else {
-           // console.log('hbase tables:', data.map(t => t.toString()));
+            //console.log('hbase tables:', data.map(t => t.toString()));
             const table = data.find(t => t.toString() === config.tableName);
             if(table){
-               // console.log(`Hbase table ${config.tableName} found. Cache is ready.`);
+                //console.log(`Hbase table ${config.tableName} found. Cache is ready.`);
                 return client;
             } else {
                 console.log(`Hbase table ${config.tableName} NOT found. Caching will not work`)
