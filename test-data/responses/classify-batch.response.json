@@ -1,0 +1,43 @@
+[
+  {
+    "gbifID": 1413807310,
+    "classification": {
+      "scientificName": "Camponotus repens",
+      "taxonRank": "species",
+      "kingdom": "Animalia",
+      "phylum": "Arthropoda",
+      "class": "Insecta",
+      "order": "Hymenoptera",
+      "family": "Formicidae",
+      "genus": "Camponotus",
+      "species": "Camponotus repens",
+      "remarks": "2 sequence(s) matched; selected highest identity (100%) from boldistilled coi (coi, seqID=6498a8da9eb9e0ae4f25d215edcf1686); all matches: [6498a8da9eb9e0ae4f25d215edcf1686: dataset=boldistilled coi gene=coi identity=100 qcovs=100; 9a5ab3e31ba1480b344114bce9fd981e: dataset=midori2 12s gene=ssu rrna 12s mitochondrial identity=92.6 qcovs=62.5]"
+    }
+  },
+  {
+    "gbifID": 1413807586,
+    "classification": {
+      "scientificName": "Camponotus",
+      "taxonRank": "genus",
+      "kingdom": "Animalia",
+      "phylum": "Arthropoda",
+      "class": "Insecta",
+      "order": "Hymenoptera",
+      "family": "Formicidae",
+      "genus": "Camponotus",
+      "remarks": "1 sequence(s) matched; selected highest identity (99.8%) from boldistilled coi (coi, seqID=1774a9ee66ac41b1402d1515c30ad90e); all matches: [1774a9ee66ac41b1402d1515c30ad90e: dataset=boldistilled coi gene=coi identity=99.8 qcovs=100]"
+    }
+  },
+  {
+    "gbifID": 1413810076,
+    "classification": null
+  },
+  {
+    "gbifID": 999000001,
+    "classification": null
+  },
+  {
+    "gbifID": 999000002,
+    "classification": null
+  }
+]

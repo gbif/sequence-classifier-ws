@@ -414,6 +414,23 @@ app.post('/occurrence/classify/batch', async (req, res) => {
   res.json(results);
 });
 
+// ── malformed-body errors ─────────────────────────────────────────────────────
+// body-parser rejects a bad body before any route runs, and Express' default
+// handler answers with an HTML error page and logs a full stack trace. Clients of
+// this API parse JSON, so answer in JSON and log one line. Registered after the
+// routes so it also catches anything they throw.
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    console.error(`Malformed JSON body on ${req.method} ${req.path}: ${err.message}`);
+    return res.status(400).json({ error: 'Malformed JSON in request body' });
+  }
+  if (err?.type === 'entity.too.large') {
+    console.error(`Body too large on ${req.method} ${req.path}: limit ${err.limit} bytes`);
+    return res.status(413).json({ error: 'Request body too large', limit: err.limit });
+  }
+  return next(err);
+});
+
 const server = app.listen(PORT, () => {
   console.log(`vsearch proxy listening on http://localhost:${PORT}`);
   console.log(`Forwarding to ${VSEARCH_URL}`);

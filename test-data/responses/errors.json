@@ -1,0 +1,55 @@
+{
+  "non_array_body": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": {
+      "error": "Request body must be an array of occurrence objects"
+    }
+  },
+  "missing_content_type": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": {
+      "error": "Request body must be an array of occurrence objects"
+    },
+    "note": "Without Content-Type: application/json the body is not parsed, so it fails the array check."
+  },
+  "malformed_json": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": {
+      "error": "Malformed JSON in request body"
+    }
+  },
+  "empty_array": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": []
+  },
+  "upstream_timeout": {
+    "status": 504,
+    "contentType": "application/json",
+    "body": {
+      "error": "vsearch server timed out"
+    },
+    "note": "Not reproduced live; from index.mjs."
+  },
+  "upstream_unreachable": {
+    "status": 502,
+    "contentType": "application/json",
+    "body": {
+      "error": "Could not reach vsearch server",
+      "details": "<message>"
+    },
+    "note": "Not reproduced live; from index.mjs."
+  },
+  "body_too_large": {
+    "status": 413,
+    "contentType": "application/json",
+    "body": {
+      "error": "Request body too large",
+      "limit": 10485760
+    },
+    "note": "JSON body limit is 10 MB."
+  }
+}
