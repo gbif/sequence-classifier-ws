@@ -24,6 +24,7 @@ pipeline {
 
     stages {
         stage('Create version tag') {
+            when { not { changeRequest() } }
             steps {
                 script {
                     withCredentials([gitUsernamePassword(credentialsId: 'sequence-ws-token', gitToolName: 'Default')]) {
@@ -101,6 +102,7 @@ pipeline {
         }
 
         stage('Build image') {
+            when { not { changeRequest() } }
             steps {
                 script {
                     // Builds the final image if test passed
@@ -120,6 +122,7 @@ pipeline {
         }
 
         stage('Push image') {
+            when { not { changeRequest() } }
             steps {
                 script {
                     env.IMAGE_TAGS.tokenize(',').each { tag ->
@@ -130,7 +133,7 @@ pipeline {
         }
 
         stage('Tag release in git') {
-            when { expression { env.IS_RELEASE == 'true' } }
+            when { allOf { branch 'main'; not { changeRequest() } } }
             steps {
                 withCredentials([gitUsernamePassword(credentialsId: 'sequence-ws-token', gitToolName: 'Default')]) {
                     sh """
