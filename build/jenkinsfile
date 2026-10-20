@@ -26,7 +26,7 @@ pipeline {
         stage('Create version tag') {
             steps {
                 script {
-                    withCredentials([gitUsernamePassword(credentialsId: scm.userRemoteConfigs[0].credentialsId, gitToolName: 'Default')]) {
+                    withCredentials([gitUsernamePassword(credentialsId: 'sequence-ws-token', gitToolName: 'Default')]) {
                     // Make sure we see all release tags, not just what the checkout fetched
                     sh 'git fetch --tags --force'
 
@@ -132,7 +132,7 @@ pipeline {
         stage('Tag release in git') {
             when { expression { env.IS_RELEASE == 'true' } }
             steps {
-                withCredentials([gitUsernamePassword(credentialsId: scm.userRemoteConfigs[0].credentialsId, gitToolName: 'Default')]) {
+                withCredentials([gitUsernamePassword(credentialsId: 'sequence-ws-token', gitToolName: 'Default')]) {
                     sh """
                         git tag -a v${env.VERSION} -m "Release v${env.VERSION}"
                         git push origin v${env.VERSION}
