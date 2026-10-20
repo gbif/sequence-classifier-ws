@@ -1,0 +1,5 @@
+# File describing code owners
+# This is a initial draft
+
+build/* @zaultooz
+charts/* @zaultooz
