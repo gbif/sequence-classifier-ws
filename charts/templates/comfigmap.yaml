@@ -1,0 +1,19 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ include "helpers.releaseName" . }}-conf
+  namespace: {{ .Release.Namespace }}
+data:
+  VSEARCH_URL: {{ .Values.vsearch.url | quote }}
+  PORT: {{ .Values.service.port | quote}}
+  DB_NAME: {{ .Values.dbName | quote}}
+  CACHE: {{ .Values.cache | quote}}
+  {{- if eq .Values.cache "hbase" }}
+  HBASE_URL: {{ .Values.hbase.url | quote }}
+  HBASE_PORT: {{ .Values.hbase.port | quote }}
+  HBASE_TABLE: {{ .Values.hbase.table | quote }}
+  {{- end }}
+  {{- if eq .Values.cache "dragonfly" }}
+  DRAGONFLY_URL: {{ .Values.dragonfly.url | quote }}
+  DRAGONFLY_PORT: {{ .Values.dragonfly.port | quote }}
+  {{- end }}
