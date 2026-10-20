@@ -18,15 +18,15 @@ pipeline {
     }
 
     environment {
-        REGISTRY   = 'docker.gbif.org'
         IMAGE_NAME = 'edna/sequence-classifier'
-        IMAGE_REPO = "${REGISTRY}/${IMAGE_NAME}"
+        IMAGE_REPO = "${CI_REGISTRY}/${IMAGE_NAME}"
     }
 
     stages {
         stage('Create version tag') {
             steps {
                 script {
+                    withCredentials([gitUsernamePassword(credentialsId: scm.userRemoteConfigs[0].credentialsId, gitToolName: 'Default')]) {
                     // Make sure we see all release tags, not just what the checkout fetched
                     sh 'git fetch --tags --force'
 
@@ -75,13 +75,20 @@ pipeline {
 
                     currentBuild.displayName = "#${env.BUILD_NUMBER} ${env.VERSION}"
                     echo "Release build: ${env.IS_RELEASE}, version: ${env.VERSION}, tags: ${env.IMAGE_TAGS}"
+                    }
                 }
             }
         }
 
         stage('Running tests') {
             steps {
-                sh "docker build --target test -t ${env.IMAGE_REPO}:test-${env.BUILD_NUMBER} ."
+                sh """
+                        docker build \
+                            --target test \
+                            -f ./build/dockerfile \
+                            -t ${env.IMAGE_REPO}:test-${env.BUILD_NUMBER} \
+                            --build-arg REG=$CI_REGISTRY/third-party .
+                    """
             }
             post {
                 always {
@@ -99,7 +106,9 @@ pipeline {
                     // Builds the final image if test passed
                     sh """
                         docker build \
-                            -t ${env.IMAGE_REPO}:${env.VERSION} .
+                            -f ./build/dockerfile \
+                            -t ${env.IMAGE_REPO}:${env.VERSION} \
+                            --build-arg REG=$CI_REGISTRY/third-party .
                     """
                     env.IMAGE_TAGS.tokenize(',').each { tag ->
                         if (tag != env.VERSION) {
@@ -123,10 +132,12 @@ pipeline {
         stage('Tag release in git') {
             when { expression { env.IS_RELEASE == 'true' } }
             steps {
-                sh """
-                    git tag -a v${env.VERSION} -m "Release ${env.VERSION}"
-                    git push origin v${env.VERSION}
-                """
+                withCredentials([gitUsernamePassword(credentialsId: scm.userRemoteConfigs[0].credentialsId, gitToolName: 'Default')]) {
+                    sh """
+                        git tag -a v${env.VERSION} -m "Release v${env.VERSION}"
+                        git push origin v${env.VERSION}
+                    """
+                }
             }
         }
     }

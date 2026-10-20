@@ -20,7 +20,7 @@ const CACHE = {
 };
 
 const HBASE = {
-  hosts: JSON.parse(fromEnv('HBASE_URL',['127.0.0.1'])),
+  host: fromEnv('HBASE_URL','127.0.0.1'),
   port: Number(fromEnv('HBASE_PORT','9090')),
   tableName: fromEnv('HBASE_TABLE','blast_cache'),
 };

@@ -6,7 +6,7 @@ const thrift = require('thrift'),
 let connection; 
 let client;
 const connect = () =>{
-    connection = thrift.createConnection(config.hosts[0], config.port, {
+    connection = thrift.createConnection(config.host, config.port, {
         transport: thrift.TBufferedTransport,
         protocol: thrift.TBinaryProtocol
       }); 
