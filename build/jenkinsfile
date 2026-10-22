@@ -18,7 +18,7 @@ pipeline {
     }
 
     environment {
-        IMAGE_NAME = 'edna/sequence-classifier'
+        IMAGE_NAME = 'edna/sequence-classifier-ws'
         IMAGE_REPO = "${CI_REGISTRY}/${IMAGE_NAME}"
     }
 
@@ -85,6 +85,7 @@ pipeline {
             steps {
                 sh """
                         docker build \
+                            --no-cache-filter test \
                             --target test \
                             -f ./build/dockerfile \
                             -t ${env.IMAGE_REPO}:test-${env.BUILD_NUMBER} \
