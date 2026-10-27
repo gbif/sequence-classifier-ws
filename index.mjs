@@ -159,6 +159,10 @@ app.use(express.text({ type: 'text/*', limit: '50mb' }));   // for /search/batch
 
 app.post('/search/batch', async (req, res) => {
   const outfmt = req.query.outfmt || 'blast6out';
+  console.timeStamp("Starting")
+  let logString = "starting to process request: %s"
+  logString = logString.sprintf(req.query)
+  console.log(logString)
   if (!['blast6out', 'alnout'].includes(outfmt)) {
     return res.status(400).json({ error: `Unknown outfmt: ${outfmt}` });
   }
@@ -197,7 +201,7 @@ app.post('/search/batch', async (req, res) => {
   const result = Object.fromEntries(
     Object.entries(parsed).map(([queryId, matches]) => [queryId, pickBestMatch(queryId, matches)])
   );
-
+  console.timeEnd("handling request")
   res.json(result);
 });
 
