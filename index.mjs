@@ -159,10 +159,6 @@ app.use(express.text({ type: 'text/*', limit: '50mb' }));   // for /search/batch
 
 app.post('/search/batch', async (req, res) => {
   const outfmt = req.query.outfmt || 'blast6out';
-  console.timeStamp("Starting")
-  let logString = "starting to process request: %s"
-  logString = logString.sprintf(req.query)
-  console.log(logString)
   if (!['blast6out', 'alnout'].includes(outfmt)) {
     return res.status(400).json({ error: `Unknown outfmt: ${outfmt}` });
   }
@@ -201,7 +197,6 @@ app.post('/search/batch', async (req, res) => {
   const result = Object.fromEntries(
     Object.entries(parsed).map(([queryId, matches]) => [queryId, pickBestMatch(queryId, matches)])
   );
-  console.timeEnd("handling request")
   res.json(result);
 });
 
@@ -327,15 +322,20 @@ app.get('/health', async (req, res) => {
 //
 app.post('/occurrence/classify', async (req, res) => {
   const occurrence = req.body;
-
+  console.timeStamp("Starting")
+  let logString = "starting to process request: %s"
+  logString = logString.sprintf(req.body)
+  console.log(logString)
   if (!occurrence || typeof occurrence !== 'object') {
     return res.status(400).json({ error: 'Request body must be a JSON occurrence object' });
   }
 
   let classification;
   try {
+    console.log(req.id)
     classification = await assignTaxonomyToOccurrence(occurrence, vsearchQueryWithCache);
   } catch (err) {
+    console.timeEnd("handling failed")
     console.error('Classification error:', err.message);
     if (err.name === 'TimeoutError') {
       return res.status(504).json({ error: 'vsearch server timed out' });
@@ -346,7 +346,7 @@ app.post('/occurrence/classify', async (req, res) => {
   if (classification === null) {
     return res.status(204).end();
   }
-
+  console.timeEnd("handled request")
   res.json(classification);
 });
 
