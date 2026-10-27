@@ -361,9 +361,6 @@ app.post('/occurrence/classify/batch', async (req, res) => {
   const occurrences = req.body;
   console.log(req.id)
   console.timeStamp("Starting")
-  let logString = "starting to process request: %s"
-  logString = logString.sprintf(req.body)
-  console.log(logString)
   if (!Array.isArray(occurrences)) {
     return res.status(400).json({ error: 'Request body must be an array of occurrence objects' });
   }
