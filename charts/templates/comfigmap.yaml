@@ -17,4 +17,5 @@ data:
   DRAGONFLY_URL: {{ .Values.dragonfly.url | quote }}
   DRAGONFLY_PORT: {{ .Values.dragonfly.port | quote }}
   {{- end }}
-  VSEARCH_TIMEOUT_MS: {{ .Values.vsearchTimeout | quote }}
+  VSEARCH_TIMEOUT_MS: {{ .Values.vsearch.timeout | quote }}
+  VSEARCH_THREADS: {{ .Values.vsearch.threads | quote}}

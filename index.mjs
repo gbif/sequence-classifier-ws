@@ -4,7 +4,7 @@ import { pickBestMatch } from './pickBestMatch.mjs';
 import { assignTaxonomyToOccurrence } from './assignTaxonomyToOccurrence.mjs';
 import PQueue from 'p-queue';
 
-const queue = new PQueue({ concurrency: 4 });
+const queue = new PQueue({ concurrency: parseInt(process.env.VSEARCH_THREADS) || 4 });
 const _require = createRequire(import.meta.url);
 const cache = _require('./caches/index.js');
 const CACHE_DB = _require('./caches/config.js').CACHE.dataBaseName;
