@@ -224,6 +224,7 @@ async function vsearchQuery(fasta) {
 }
 
 async function cacheLookup(id) {
+  console.log("cache lookup: " + id)
   try { return await cache.get(id, CACHE_DB); }
   catch { return null; }
 }
@@ -249,8 +250,10 @@ async function vsearchQueryWithCache(fasta) {
   }
 
   if (missIds.length > 0) {
-    const missFasta = missIds.map(id => `>${id}\n${seqs[id]}`).join('\n');
-    const fresh = await vsearchQuery(missFasta);
+    console.log("Found missing IDs: " + missIds.length)
+    const missFasta = missIds.map(id => `>${id}\n${seqs[id]}`).join('\n'); 
+    const fresh = await queue.add(() => vsearchQuery(missFasta));
+    console.log(`Finished one. Waiting: ${queue.size}, running: ${queue.pending}`)
     await Promise.all(
       Object.entries(fresh).map(async ([id, matches]) => {
         await cacheWrite(id, matches);
@@ -386,8 +389,7 @@ app.post('/occurrence/classify/batch', async (req, res) => {
   if (seqMap.size > 0) {
     const fasta = [...seqMap.entries()].map(([id, seq]) => `>${id}\n${seq}`).join('\n');
     try {
-      matchesMap = await queue.add(() => vsearchQueryWithCache(fasta));
-      console.log(`Finished one. Waiting: ${queue.size}, running: ${queue.pending}`)
+      matchesMap = await vsearchQueryWithCache(fasta);
     } catch (err) {
       console.error('Batch vsearch error:', err.message);
       if (err.name === 'TimeoutError') {
