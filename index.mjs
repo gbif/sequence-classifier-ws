@@ -163,9 +163,6 @@ function logQueueSize() {
   console.log(`Waiting: ${queue.size}, running: ${queue.pending}`);
 }
 
-queue.on('add', () => console.log(`Added. Waiting: ${queue.size}, running: ${queue.pending}`));
-queue.on('next', () => console.log(`Finished one. Waiting: ${queue.size}, running: ${queue.pending}`));
-
 app.post('/search/batch', async (req, res) => {
   const outfmt = req.query.outfmt || 'blast6out';
   if (!['blast6out', 'alnout'].includes(outfmt)) {
@@ -389,7 +386,8 @@ app.post('/occurrence/classify/batch', async (req, res) => {
   if (seqMap.size > 0) {
     const fasta = [...seqMap.entries()].map(([id, seq]) => `>${id}\n${seq}`).join('\n');
     try {
-      matchesMap = await vsearchQueryWithCache(fasta);
+      matchesMap = await queue.add(() => vsearchQueryWithCache(fasta));
+      console.log(`Finished one. Waiting: ${queue.size}, running: ${queue.pending}`)
     } catch (err) {
       console.error('Batch vsearch error:', err.message);
       if (err.name === 'TimeoutError') {
