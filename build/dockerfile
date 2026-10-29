@@ -4,8 +4,11 @@ FROM $REG/node:26-alpine AS base
 
 WORKDIR /app
 
-# Copy manifests first so this layer is cached
+# Copy manifests first so the dependency layer is cached
 COPY package*.json ./
+# Installed here so both the test stage and the final image have them; the
+# tests import runtime dependencies (e.g. p-queue).
+RUN npm ci
 # Copy source
 COPY caches ./caches
 COPY *.mjs .
@@ -14,17 +17,15 @@ COPY scripts ./scripts
 # ---- Test the app ----
 FROM base AS test
 ENV NODE_ENV=dev
-# Copy manifests first so this layer is cached
 COPY test ./test
-# Copy source
 COPY test-data ./test-data
 RUN npm test
 
-# ---- Install dependencies the app ----
+# ---- Final image ----
 FROM base
 ENV NODE_ENV=production
 WORKDIR /app
-RUN npm ci && npm prune
+RUN npm prune --omit=dev
 # use non-root user
 USER node
 
