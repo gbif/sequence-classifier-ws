@@ -46,8 +46,18 @@ Configuration via environment variables:
 |---|---|---|
 | `PORT` | `3000` | Listening port |
 | `VSEARCH_URL` | `http://127.0.0.1:8000/search/batch` | vsearch server URL |
-| `VSEARCH_TIMEOUT_MS` | `30000` | How long to wait for vsearch before giving up |
+| `VSEARCH_TIMEOUT_MS` | `120000` | Timeout for one vsearch request (one chunk); not retried |
+| `VSEARCH_BATCH_SIZE` | `25` | Sequences per vsearch request; larger requests are split |
+| `VSEARCH_CONCURRENCY` | `4` | vsearch requests in flight from this process, across all endpoints; about 2 × vsearch replicas |
+| `VSEARCH_RETRIES` | `2` | Extra attempts for a chunk that fails with a network error or 5xx (timeouts are not retried) |
+| `VSEARCH_QUEUE_LOG` | unset | `true` logs every vsearch queue add/finish (debugging only) |
 | `CACHE` | `dragonfly` | Cache backend: `dragonfly`, `hbase`, or `none` (no cache) |
+| `DB_NAME` | `vsearch_testing` | Cache namespace |
+| `REFERENCE_DB_VERSION` | `unversioned` | Version of the reference `.udb` and vsearch parameters; part of every cache key |
+| `CACHE_TOP_N` | `10` | Hits stored per sequence |
+| `CACHE_TIMEOUT_MS` | `1000` | Per cache round-trip; a slower cache counts as a miss |
+| `REF_CACHE_SIZE` | `500000` | Reference headers kept in process memory |
+| `SHUTDOWN_TIMEOUT_MS` | `150000` | How long shutdown waits for in-flight requests |
 
 `npm start` reads a `.env` file in the project root if one is present — copy
 `.env.example` to `.env` and edit. Real environment variables take precedence over
@@ -81,21 +91,23 @@ Sequences are deduplicated across all occurrences before querying vsearch, so a 
 
 ### `GET /health`
 
-Readiness probe. Checks the upstream vsearch server (3 s timeout) and the cache backend
-in parallel.
+Readiness probe. Checks the upstream vsearch server and the cache backend in parallel
+(3 s timeout each).
 
-**Response**: `200` when both are reachable, `503` when either is not.
+**Response**: `200` when vsearch is reachable, `503` when it is not. The cache is
+optional — lookups fall through to vsearch — so a cache outage alone still answers
+`200`, with `status: "degraded"`:
 
 ```json
 { "status": "ok", "vsearch": "ok", "cache": "ok" }
-```
-
-A failing component is reported individually, so a `503` body tells you which one is
-down:
-
-```json
 { "status": "degraded", "vsearch": "ok", "cache": "error" }
+{ "status": "unavailable", "vsearch": "error", "cache": "ok" }
 ```
+
+### `GET /livez`
+
+Liveness probe. Always `200` while the process is serving; checks nothing downstream,
+so a vsearch outage never gets pods restarted.
 
 ## Examples
 
@@ -255,6 +267,66 @@ docker run -p 6379:6379 --ulimit memlock=-1 docker.dragonflydb.io/dragonflydb/dr
 
 Connection details and the cache namespace are configured in `caches/config.js`.
 
+### What is stored
+
+The cache is sized for tens of millions of distinct sequences:
+
+- **Per sequence**, only the top `CACHE_TOP_N` hits, each as a compact array of the
+  reference id plus the alignment stats — not the 23 header fields.
+- **Per reference**, the header string, once, under `<namespace>:ref`. The service keeps
+  recently used headers in memory.
+- **Sequences with no hits** are stored as an empty list, so they are never searched
+  again.
+
+Entries never expire: a result only changes when the reference database does. The
+namespace is `DB_NAME:REFERENCE_DB_VERSION`, so **bump `REFERENCE_DB_VERSION` whenever the
+`.udb` is rebuilt or the vsearch flags change**; old entries are then simply not read.
+
+In HBase each namespace is its own column (`ref:<namespace>`) in the row for the
+sequence or reference id. Rows written by earlier versions (`ref:sourcedb` / `ref:data`)
+are not read.
+
+A cache that is down, errors or takes longer than `CACHE_TIMEOUT_MS` is treated as a
+miss, and the request goes to vsearch.
+
+## Backfilling the cache
+
+At indexing time the service should answer almost entirely from the cache. Fill it up
+front with one vsearch search per **distinct** sequence:
+
+```bash
+# sequences.tsv: nucleotideSequenceID<TAB>sequence, one per line (.gz accepted)
+REFERENCE_DB_VERSION=2026-10 CACHE=hbase \
+  node scripts/backfill.mjs sequences.tsv --total 24156401
+```
+
+- Progress, throughput and an ETA are logged every 10 s.
+- Progress is checkpointed to `sequences.tsv.checkpoint`; rerunning the same command
+  resumes. Ctrl-C stops after in-flight chunks finish.
+- A chunk that still fails after retries is written to `sequences.tsv.failed.tsv`; rerun
+  the script on that file.
+- Writes are strict: a failed cache write fails the chunk, rather than being ignored as
+  it is in the service.
+
+To measure vsearch throughput alone — to size the number of vsearch replicas — use the
+no-op cache and a sample:
+
+```bash
+CACHE=none node scripts/backfill.mjs sample.tsv --limit 10000
+```
+
+Measured against the GBIF test vsearch (2 replicas, `--maxaccepts/--maxrejects 1000`) on
+2026-10-29, with 975 real sequences:
+
+- Each replica serves **one request at a time**, at about **6 sequences/s** (4.6–7.8
+  depending on the sequence mix). Batch size makes little difference (25 → 200).
+- 54% of sequences had no hits.
+- So throughput ≈ replicas × 6 seq/s: 24M sequences take ~23 days on 2 replicas,
+  ~1 week on 7, ~3 days on 16.
+- The Service assigns connections to replicas at random, so two requests sometimes
+  queue on one replica while the other idles. Running `VSEARCH_CONCURRENCY` at about
+  twice the replica count keeps every replica busy.
+
 ## Testing
 
 The ranking and classification logic has a unit test suite that runs entirely offline — no vsearch server, no reference database, no real sequences needed. Tests use minimal synthetic match objects to verify each ranking rule in isolation.
@@ -268,7 +340,7 @@ npm test
 ✔ higher qcovs wins when identity is tied
 ✔ multiple sequences: sequence with highest identity wins
 ...
-ℹ tests 15  pass 15  fail 0
+ℹ tests 30  pass 30  fail 0
 ```
 
 Tests live in `test/`. Each `test()` block covers exactly one rule. When adding a new ranking rule, write the test first — it serves as a precise specification of what the rule should do before any code is written.

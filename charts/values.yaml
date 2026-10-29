@@ -1,4 +1,5 @@
-replicaCount: 1
+# Node runs requests on one thread, so scale with replicas rather than CPUs.
+replicaCount: 2
 
 # Repository for where to get the image
 image:
@@ -13,7 +14,7 @@ resources:
     cpu: 1
   limits:
     memory: 8Gi
-    cpu: 2
+    cpu: 1
  
 # If an ingress should be created
 ingress:
@@ -34,23 +35,25 @@ service:
 nodeSelector: 
 
 # Probe settings
+# The service itself starts in seconds; vsearch readiness is covered by the
+# readiness probe, not by delaying startup.
 startup:
   failureThreshold: 30
-  initialDelaySeconds: 300
-  periodSeconds: 30
-  timeoutSeconds: 15
+  periodSeconds: 5
+  timeoutSeconds: 5
   
 liveness:
-  failureThreshold: 15
-  initialDelaySeconds: 30
-  periodSeconds: 60
-  timeoutSeconds: 30
-
-readiness:
-  failureThreshold: 30
-  initialDelaySeconds: 300
+  failureThreshold: 3
   periodSeconds: 30
   timeoutSeconds: 5
+
+readiness:
+  failureThreshold: 3
+  periodSeconds: 10
+  timeoutSeconds: 5
+
+# Must exceed shutdownTimeoutMs.
+terminationGracePeriodSeconds: 165
 
 # Node affinity
 nodeAffinity:
@@ -92,9 +95,35 @@ dragonfly:
   url:
   port:
 
-#Configuration for the vsearch instance
+#Configuration for the vsearch instance. Full URL of the batch endpoint,
+#including scheme and path.
 vsearch:
-  url: "localhost:8080"
+  url: "http://vsearch:8000/search/batch"
+  # Per-request timeout, ms. Timeouts are not retried, so allow for a request
+  # waiting behind others on a busy replica.
+  timeoutMs: 120000
+  # Sequences per vsearch request. Throughput per replica barely changes with
+  # batch size (measured 25-200), so keep requests small for latency.
+  batchSize: 25
+  # vsearch requests in flight per pod. Each vsearch replica serves one
+  # request at a time, and the Service spreads connections randomly, so use
+  # about twice the number of vsearch replicas to keep all of them busy.
+  concurrency: 4
+  # Extra attempts per request failing with a network error or 5xx
+  # (timeouts are not retried)
+  retries: 2
 
 #Name of the table for the cache
 dbName: sequenceCache
+
+#Version of the reference database (.udb) and vsearch parameters. Part of every
+#cache key: bump it whenever either changes, or stale results are served.
+referenceDbVersion: ""
+
+#Hits kept per sequence in the cache
+cacheTopN: 10
+#Timeout per cache round-trip, ms
+cacheTimeoutMs: 1000
+
+#How long a pod waits for in-flight requests on shutdown, ms
+shutdownTimeoutMs: 150000

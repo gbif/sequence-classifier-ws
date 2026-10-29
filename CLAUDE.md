@@ -24,8 +24,11 @@ npm start
 
 Environment variables:
 - `PORT` — listening port (default 3000)
-- `VSEARCH_URL` — vsearch server URL (default `http://0.0.0.0:8000/search/batch`)
+- `VSEARCH_URL` — vsearch server URL (default `http://127.0.0.1:8000/search/batch`)
 - `CACHE` — cache backend: `dragonfly` (default), `hbase`, or `none` (no cache)
+- `REFERENCE_DB_VERSION` — part of every cache key; bump when the `.udb` or vsearch flags change
+- `VSEARCH_BATCH_SIZE` / `VSEARCH_CONCURRENCY` / `VSEARCH_RETRIES` — chunking, per-process in-flight cap, retries
+- Full list in README.md
 
 ## Endpoints
 
@@ -37,7 +40,11 @@ Environment variables:
 
 Query params for `/search/batch`: `outfmt=blast6out|alnout` (default `blast6out`).
 
-`/occurrence/classify/batch` deduplicates sequences across all occurrences before querying vsearch — one vsearch round-trip regardless of how many occurrences share the same sequence — then fans cached results back to each `assignTaxonomyToOccurrence` call.
+`/occurrence/classify/batch` deduplicates sequences across all occurrences, does one batched cache lookup, and sends only the misses to vsearch, then fans results back to each `assignTaxonomyToOccurrence` call.
+
+All vsearch traffic goes through `vsearchClient.mjs`: requests are split into `VSEARCH_BATCH_SIZE` chunks, run through one per-process `p-queue` (`VSEARCH_CONCURRENCY`), and retried on network errors and 5xx. Timeouts are not retried: each vsearch replica serves one request at a time and keeps working on abandoned requests, so a retry only adds load. Spreading load over several vsearch instances is done in Kubernetes, behind `VSEARCH_URL`.
+
+`GET /livez` is liveness (process only). `GET /health` is readiness: 503 only when vsearch is down; a cache outage is 200 `degraded`.
 
 ## Match object fields
 
@@ -74,19 +81,23 @@ Further reconciliation rules will be added here — for example, using multi-mar
 
 All cache calls route through `caches/index.js` — the single swap point. To change backend, edit that one file or set the `CACHE` env var at startup.
 
+Backend contract: `getMany(namespace, ids) → (value|null)[]`, `setMany(namespace, [id, value][])`, `disconnect()`, and `ready` (a promise resolved on first connection).
+
 Available backends:
-- `caches/dragonfly.js` — Redis-compatible, uses `redis` npm package, default host `127.0.0.1:6379`
-- `caches/hbase.js` — Apache HBase via Thrift, connects to GBIF cluster hosts
+- `caches/dragonfly.js` — Redis-compatible, uses `redis` npm package, default host `127.0.0.1:6379`. Offline queue disabled so an outage fails fast.
+- `caches/hbase.js` — Apache HBase via Thrift. Namespace is the column qualifier (`ref:<namespace>`); reconnects with backoff.
 - `caches/none.js` — no-op: every lookup misses (straight to vsearch), writes discarded, no connections opened
 
 Connection config: `caches/config.js`.
-- `CACHE.dataBaseName` — namespace used as a key prefix (Dragonfly) or column filter (HBase)
+- `CACHE.namespace` — `DB_NAME:REFERENCE_DB_VERSION`, used for every key
 - `DRAGONFLY` — host/port for Dragonfly
 - `HBASE` — hosts, port, tableName for HBase
 
-The cache stores the top 25 vsearch hits per `nucleotideSequenceID`, pre-sorted by identity/qcovs. `pickBestMatch` selects from the cached hits.
+`matchCache.mjs` sits on top of the backend. Per `nucleotideSequenceID` it stores the top `CACHE_TOP_N` (default 10) hits as compact arrays `[refId, ...stats]`; reference headers are stored once each under `<namespace>:ref` and kept in an in-process LRU. Sequences with no hits are stored as `[]`. Entries never expire — the namespace carries the reference DB version.
 
-Cache misses are non-fatal: if the cache is unreachable, all queries fall through to vsearch.
+Cache failures are non-fatal: an error or a round-trip slower than `CACHE_TIMEOUT_MS` counts as a miss and the query goes to vsearch.
+
+`scripts/backfill.mjs` fills the cache from a TSV of distinct sequences, with checkpointing and a failures file; with `CACHE=none --limit N` it benchmarks vsearch throughput.
 
 ## Unit tests
 
@@ -98,6 +109,8 @@ npm test
 
 Tests live in `test/`. Each `test()` block covers exactly one ranking rule. **Add a test for every new ranking rule before implementing it.**
 
+Also under test: `vsearchClient` (chunking, concurrency cap, retry rules) and `matchCache` (hits skip search, negative caching, top-N storage, header dictionary, cache failure/timeout fallthrough, namespace isolation).
+
 Current rules under test:
 - `pickBestMatch`: identity desc, qcovs desc tiebreaker; topN limit
-- `assignTaxonomyToOccurrence`: null on empty/invalid sequences; highest-identity sequence wins across multiple sequences; invalid sequences excluded before querying
+- `assignTaxonomyToOccurrence`: null on empty/invalid sequences; highest-identity sequence wins across multiple sequences; invalid sequences and unusable IDs excluded before querying

@@ -1,170 +1,63 @@
 import express from 'express';
 import { createRequire } from 'module';
 import { pickBestMatch } from './pickBestMatch.mjs';
-import { assignTaxonomyToOccurrence } from './assignTaxonomyToOccurrence.mjs';
-import PQueue from 'p-queue';
+import { assignTaxonomyToOccurrence, extractSequences } from './assignTaxonomyToOccurrence.mjs';
+import { createVsearchClient, parseFasta } from './vsearchClient.mjs';
+import { createMatchCache } from './matchCache.mjs';
 
-const queue = new PQueue({ concurrency: 4 });
 const _require = createRequire(import.meta.url);
 const cache = _require('./caches/index.js');
-const CACHE_DB = _require('./caches/config.js').CACHE.dataBaseName;
+const CACHE_CONFIG = _require('./caches/config.js').CACHE;
 
 // Mirrors the selection in caches/index.js, which is what actually loads the
 // module. Kept here so startup and health logging can name the active backend.
 const CACHE_BACKEND = process.env.CACHE || 'dragonfly';
 
+const int = (name, fallback) => {
+  const n = parseInt(process.env[name]);
+  return Number.isNaN(n) ? fallback : n;
+};
+
 const VSEARCH_URL = process.env.VSEARCH_URL || 'http://127.0.0.1:8000/search/batch';
-const VSEARCH_TIMEOUT_MS = parseInt(process.env.VSEARCH_TIMEOUT_MS) || 30_000;
+const VSEARCH_TIMEOUT_MS = int('VSEARCH_TIMEOUT_MS', 120_000);
 const PORT = process.env.PORT || 3000;
+const SHUTDOWN_TIMEOUT_MS = int('SHUTDOWN_TIMEOUT_MS', 150_000);
 
-// Field order matches the 23-field pipe-separated FASTA header
-const HEADER_FIELDS = [
-  'id', 'accessionNumber', 'scientificName',
-  'decimalLatitude', 'decimalLongitude', 'typeStatus',
-  'catalogueNumber', 'identifiedBy', 'taxonRank',
-  'country', 'locality', 'basisOfRecord',
-  'higherClassification', 'dataset', 'targetGene',
-  'domain', 'kingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species',
-];
+// One queue per process caps the vsearch requests this pod has in flight,
+// across every endpoint.
+const vsearch = createVsearchClient({
+  url:         VSEARCH_URL,
+  timeoutMs:   VSEARCH_TIMEOUT_MS,
+  batchSize:   int('VSEARCH_BATCH_SIZE', 25),
+  concurrency: int('VSEARCH_CONCURRENCY', 4),
+  retries:     int('VSEARCH_RETRIES', 2),
+  logQueue:    process.env.VSEARCH_QUEUE_LOG === 'true',
+});
 
-function parseTargetHeader(header) {
-  const parts = header.split('|');
-  const obj = {};
-  HEADER_FIELDS.forEach((field, i) => {
-    obj[field] = (parts[i] || '').replace(/_/g, ' ');
-  });
-  return obj;
-}
+const matchCache = createMatchCache({
+  cache,
+  search:       seqs => vsearch.search(seqs),
+  namespace:    CACHE_CONFIG.namespace,
+  topN:         int('CACHE_TOP_N', 10),
+  timeoutMs:    int('CACHE_TIMEOUT_MS', 1000),
+  refCacheSize: int('REF_CACHE_SIZE', 500_000),
+});
 
-function parseFasta(text) {
-  const seqs = {};
-  let id = null;
-  let bases = [];
-  for (const line of text.split('\n')) {
-    if (line.startsWith('>')) {
-      if (id !== null) seqs[id] = bases.join('');
-      id = line.slice(1).trim();
-      bases = [];
-    } else {
-      bases.push(line.trim());
-    }
+const vsearchQueryWithCache = fasta => matchCache.query(parseFasta(fasta));
+
+const upstreamError = (res, err, message) => {
+  console.error(`${message}:`, err.message);
+  if (err.name === 'TimeoutError') {
+    return res.status(504).json({ error: 'vsearch server timed out' });
   }
-  if (id !== null) seqs[id] = bases.join('');
-  return seqs;
-}
-
-// ── blast6out parser ─────────────────────────────────────────────────────────
-
-function parseBlast6out(text, sequences) {
-  const results = {};
-  for (const line of text.split('\n')) {
-    if (!line.trim()) continue;
-    const cols = line.split('\t');
-    if (cols.length < 12) continue;
-    const queryId = cols[0];
-    const match = parseTargetHeader(cols[1]);
-    match.identity        = parseFloat(cols[2]);
-    match.alignmentLength = parseInt(cols[3]);
-    match.mismatches      = parseInt(cols[4]);
-    match.gapOpenings     = parseInt(cols[5]);
-    match.qstart          = parseInt(cols[6]);
-    match.qend            = parseInt(cols[7]);
-    match.sstart          = parseInt(cols[8]);
-    match.send            = parseInt(cols[9]);
-    match.evalue          = parseFloat(cols[10]);
-    match.bitScore        = parseFloat(cols[11]);
-    const qLen = sequences[queryId]?.length;
-    match.qcovs = qLen
-      ? Math.round((match.alignmentLength / qLen) * 1000) / 10
-      : -1;
-    if (!results[queryId]) results[queryId] = [];
-    results[queryId].push(match);
-  }
-  return results;
-}
-
-// ── alnout parser ────────────────────────────────────────────────────────────
-
-function parseAlnout(text, sequences) {
-  const results = {};
-
-  // Split into per-query blocks; prepend \n so the first "Query >" also matches
-  const blocks = ('\n' + text).split('\nQuery >').slice(1);
-
-  for (const block of blocks) {
-    const lines = block.split('\n');
-    const queryId = lines[0].trim();
-    const qLen = sequences[queryId]?.length;
-
-    // Summary table: "%Id   TLen  Target" header, then one row per match until blank line
-    const hIdx = lines.findIndex(l => l.trim().startsWith('%Id'));
-    if (hIdx === -1) continue;
-
-    const summaryRows = [];
-    for (let i = hIdx + 1; i < lines.length; i++) {
-      const l = lines[i].trim();
-      if (!l) break;
-      const cols = l.split(/\s+/);
-      summaryRows.push({
-        identity:     parseFloat(cols[0]),   // already numeric, % sign stripped by parseInt if present
-        targetLen:    parseInt(cols[1]),
-        targetHeader: cols.slice(2).join(' '),
-      });
-    }
-
-    // Alignment sub-blocks: each begins with " Query Xnt >" (leading space, then "Query Xnt >")
-    // Split on that pattern to get one chunk per alignment
-    const alnMap = {};  // targetHeader → { alignmentLength, alignment }
-    const alnChunks = block.split(/\n Query \d+nt >/).slice(1);
-    for (const chunk of alnChunks) {
-      const chunkLines = chunk.split('\n');
-      const targetLine = chunkLines.find(l => l.startsWith('Target '));
-      if (!targetLine) continue;
-      const targetHeader = targetLine.split('>')[1]?.trim();
-      if (!targetHeader) continue;
-      // Stats summary line: "X cols, X ids (X%), X gaps (X%)"
-      const statsLine = [...chunkLines].reverse().find(l => /^\d+ cols,/.test(l.trim()));
-      let alignmentLength = 0;
-      if (statsLine) {
-        const m = statsLine.trim().match(/^(\d+) cols/);
-        if (m) alignmentLength = parseInt(m[1]);
-      }
-      alnMap[targetHeader] = { alignmentLength, alignment: ' Query ' + chunk };
-    }
-
-    const matches = [];
-    for (const { identity, targetLen, targetHeader } of summaryRows) {
-      const match = parseTargetHeader(targetHeader);
-      const aln = alnMap[targetHeader];
-      const alignmentLength = aln?.alignmentLength || 0;
-      match.identity        = identity;
-      match.targetLen       = targetLen;
-      match.alignmentLength = alignmentLength;
-      match.qcovs = qLen && alignmentLength
-        ? Math.round((alignmentLength / qLen) * 1000) / 10
-        : -1;
-      if (aln?.alignment) match.alignment = aln.alignment;
-      matches.push(match);
-    }
-
-    if (matches.length > 0) results[queryId] = matches;
-  }
-
-  return results;
-}
+  return res.status(502).json({ error: message, details: err.message });
+};
 
 // ── Express server ───────────────────────────────────────────────────────────
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));                    // for /occurrence/classify
 app.use(express.text({ type: 'text/*', limit: '50mb' }));   // for /search/batch
-
-function logQueueSize() {
-  console.log(`Waiting: ${queue.size}, running: ${queue.pending}`);
-}
-
-queue.on('add', () => console.log(`Added. Waiting: ${queue.size}, running: ${queue.pending}`));
-queue.on('next', () => console.log(`Finished one. Waiting: ${queue.size}, running: ${queue.pending}`));
 
 app.post('/search/batch', async (req, res) => {
   const outfmt = req.query.outfmt || 'blast6out';
@@ -177,31 +70,12 @@ app.post('/search/batch', async (req, res) => {
 
   const sequences = parseFasta(body);
 
-  let vsearchRes;
+  let parsed;
   try {
-    vsearchRes = await queue.add(() => fetch(`${VSEARCH_URL}?outfmt=${outfmt}`, {
-      method: 'POST',
-      body,
-      headers: { 'Content-Type': 'text/plain' },
-      signal: AbortSignal.timeout(VSEARCH_TIMEOUT_MS),
-    }));
+    parsed = await vsearch.search(sequences, outfmt);
   } catch (err) {
-    console.error('Upstream error:', err.message);
-    if (err.name === 'TimeoutError') {
-      return res.status(504).json({ error: 'vsearch server timed out' });
-    }
-    return res.status(502).json({ error: 'Could not reach vsearch server', details: err.message });
+    return upstreamError(res, err, 'Could not reach vsearch server');
   }
-
-  if (!vsearchRes.ok) {
-    const text = await vsearchRes.text();
-    return res.status(502).json({ error: 'vsearch server error', status: vsearchRes.status, details: text });
-  }
-
-  const text = await vsearchRes.text();
-  const parsed = outfmt === 'blast6out'
-    ? parseBlast6out(text, sequences)
-    : parseAlnout(text, sequences);
 
   const result = Object.fromEntries(
     Object.entries(parsed).map(([queryId, matches]) => [queryId, pickBestMatch(queryId, matches)])
@@ -209,64 +83,16 @@ app.post('/search/batch', async (req, res) => {
   res.json(result);
 });
 
-// ── shared vsearch helper ─────────────────────────────────────────────────────
-
-async function vsearchQuery(fasta) {
-  const vsearchRes = await fetch(`${VSEARCH_URL}?outfmt=blast6out`, {
-    method: 'POST',
-    body: fasta,
-    headers: { 'Content-Type': 'text/plain' },
-    signal: AbortSignal.timeout(VSEARCH_TIMEOUT_MS),
-  });
-  if (!vsearchRes.ok) {
-    const text = await vsearchRes.text();
-    throw new Error(`vsearch error ${vsearchRes.status}: ${text}`);
-  }
-  const text = await vsearchRes.text();
-  return parseBlast6out(text, parseFasta(fasta));
-}
-
-async function cacheLookup(id) {
-  try { return await cache.get(id, CACHE_DB); }
-  catch { return null; }
-}
-
-async function cacheWrite(id, matches) {
-  const top25 = [...matches]
-    .sort((a, b) => (b.identity - a.identity) || (b.qcovs - a.qcovs))
-    .slice(0, 25);
-  try { await cache.set(id, CACHE_DB, top25); }
-  catch { /* non-fatal */ }
-}
-
-async function vsearchQueryWithCache(fasta) {
-  const seqs = parseFasta(fasta);
-  const ids = Object.keys(seqs);
-
-  const lookups = await Promise.all(ids.map(async id => [id, await cacheLookup(id)]));
-  const matchesMap = {};
-  const missIds = [];
-  for (const [id, cached] of lookups) {
-    if (cached !== null) matchesMap[id] = cached;
-    else missIds.push(id);
-  }
-
-  if (missIds.length > 0) {
-    const missFasta = missIds.map(id => `>${id}\n${seqs[id]}`).join('\n');
-    const fresh = await vsearchQuery(missFasta);
-    await Promise.all(
-      Object.entries(fresh).map(async ([id, matches]) => {
-        await cacheWrite(id, matches);
-        matchesMap[id] = matches;
-      })
-    );
-  }
-
-  return matchesMap;
-}
-
 // ── GET /health ───────────────────────────────────────────────────────────────
 
+// Liveness: the process is up and serving. Deliberately checks nothing
+// downstream, so a vsearch or cache outage never gets pods restarted.
+app.get('/livez', (req, res) => res.json({ status: 'ok' }));
+
+// Readiness. vsearch is required; the cache is optional (lookups fall through
+// to vsearch), so a cache outage reports "degraded" but stays 200 — otherwise
+// one cache outage would take every replica out of the load balancer at once.
+//
 // Probes are typically scraped every few seconds, so log on transition rather
 // than on every poll: one line when a dependency starts failing, one when it
 // recovers. Null until the first probe, so the first result is always logged.
@@ -275,41 +101,36 @@ let lastHealthStatus = null;
 app.get('/health', async (req, res) => {
   const vsearchHealthUrl = new URL('/health', VSEARCH_URL).href;
 
-  const [vsearch, cacheState] = await Promise.all([
+  const [vsearchState, cacheState] = await Promise.all([
     fetch(vsearchHealthUrl, { signal: AbortSignal.timeout(3000) })
       .then(r => (r.ok ? { ok: true } : { ok: false, reason: `HTTP ${r.status}` }))
       .catch(err => ({ ok: false, reason: err.message })),
 
-    cache.get('__health_check__', CACHE_DB)
+    Promise.race([
+      cache.getMany(CACHE_CONFIG.namespace, ['__health_check__']),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timed out')), 3000).unref()),
+    ])
       .then(() => ({ ok: true }))
-      .catch(err => {
-        // The backends reject with a bare string, not an Error, so err.message
-        // is undefined — reading it was reporting a healthy cache as failed.
-        const reason = err instanceof Error ? err.message : String(err);
-        // 'Not found' means the backend answered and the probe key simply is
-        // not there, which is a healthy cache rather than a failure.
-        return reason === 'Not found' ? { ok: true } : { ok: false, reason };
-      }),
+      .catch(err => ({ ok: false, reason: err instanceof Error ? err.message : String(err) })),
   ]);
 
-  const ok = vsearch.ok && cacheState.ok;
-  const status = ok ? 'ok' : 'degraded';
+  const status = !vsearchState.ok ? 'unavailable' : cacheState.ok ? 'ok' : 'degraded';
 
   if (status !== lastHealthStatus) {
-    if (ok) {
+    if (status === 'ok') {
       console.log(`Health ok — vsearch ${vsearchHealthUrl}, cache ${CACHE_BACKEND}`);
     } else {
       const failed = [];
-      if (!vsearch.ok)    failed.push(`vsearch ${vsearchHealthUrl}: ${vsearch.reason}`);
-      if (!cacheState.ok) failed.push(`cache ${CACHE_BACKEND}: ${cacheState.reason}`);
-      console.error(`Health degraded — ${failed.join('; ')}`);
+      if (!vsearchState.ok) failed.push(`vsearch ${vsearchHealthUrl}: ${vsearchState.reason}`);
+      if (!cacheState.ok)   failed.push(`cache ${CACHE_BACKEND}: ${cacheState.reason}`);
+      console.error(`Health ${status} — ${failed.join('; ')}`);
     }
     lastHealthStatus = status;
   }
 
-  res.status(ok ? 200 : 503).json({
+  res.status(vsearchState.ok ? 200 : 503).json({
     status,
-    vsearch: vsearch.ok ? 'ok' : 'error',
+    vsearch: vsearchState.ok ? 'ok' : 'error',
     cache: cacheState.ok ? 'ok' : 'error',
   });
 });
@@ -339,10 +160,7 @@ app.post('/occurrence/classify', async (req, res) => {
   try {
     classification = await assignTaxonomyToOccurrence(occurrence, vsearchQueryWithCache);
   } catch (err) {
-    if (err.name === 'TimeoutError') {
-      return res.status(504).json({ error: 'vsearch server timed out' });
-    }
-    return res.status(502).json({ error: 'Classification failed', details: err.message });
+    return upstreamError(res, err, 'Classification failed');
   }
 
   if (classification === null) {
@@ -372,30 +190,22 @@ app.post('/occurrence/classify/batch', async (req, res) => {
     return res.status(400).json({ error: 'Request body must be an array of occurrence objects' });
   }
 
-  // Collect unique sequences across all occurrences.
-  const seqMap = new Map(); // nucleotideSequenceID → sequence string
+  // Collect unique sequences across all occurrences, using the same filter
+  // assignTaxonomyToOccurrence applies.
+  const seqMap = {}; // nucleotideSequenceID → sequence string
   for (const occ of occurrences) {
-    const entries = occ.nucleotideSequence;
-    if (!Array.isArray(entries)) continue;
-    for (const { nucleotideSequenceID, sequence, invalid } of entries) {
-      if (sequence && !invalid && !seqMap.has(nucleotideSequenceID)) {
-        seqMap.set(nucleotideSequenceID, sequence);
-      }
+    for (const { nucleotideSequenceID, sequence } of extractSequences(occ)) {
+      seqMap[nucleotideSequenceID] ??= sequence;
     }
   }
 
-  // Single vsearch call covering all unique sequences.
+  // One cache lookup and one chunked vsearch search covering all unique sequences.
   let matchesMap = {};
-  if (seqMap.size > 0) {
-    const fasta = [...seqMap.entries()].map(([id, seq]) => `>${id}\n${seq}`).join('\n');
+  if (Object.keys(seqMap).length > 0) {
     try {
-      matchesMap = await vsearchQueryWithCache(fasta);
+      matchesMap = await matchCache.query(seqMap);
     } catch (err) {
-      console.error('Batch vsearch error:', err.message);
-      if (err.name === 'TimeoutError') {
-        return res.status(504).json({ error: 'vsearch server timed out' });
-      }
-      return res.status(502).json({ error: 'Could not reach vsearch server', details: err.message });
+      return upstreamError(res, err, 'Could not reach vsearch server');
     }
   }
 
@@ -435,10 +245,21 @@ app.use((err, req, res, next) => {
   return next(err);
 });
 
+// Give the cache a moment to connect so the first requests after startup can
+// use it. Not required: if it is still down, lookups just fall through.
+const cacheReady = await Promise.race([
+  cache.ready.then(() => true),
+  new Promise(resolve => setTimeout(resolve, 5000, false)),
+]);
+if (!cacheReady) console.warn(`Cache ${CACHE_BACKEND} not connected after 5 s; starting anyway`);
+
 const server = app.listen(PORT, () => {
   console.log(`vsearch proxy listening on http://localhost:${PORT}`);
   console.log(`Forwarding to ${VSEARCH_URL}`);
-  console.log(`Cache backend: ${CACHE_BACKEND}`);
+  console.log(`Cache backend: ${CACHE_BACKEND}, namespace ${CACHE_CONFIG.namespace}`);
+  if (CACHE_CONFIG.referenceVersion === 'unversioned' && CACHE_BACKEND !== 'none') {
+    console.warn('REFERENCE_DB_VERSION is not set; cached results will not be invalidated when the reference DB changes');
+  }
 });
 
 const shutdown = (signal) => {
@@ -447,11 +268,13 @@ const shutdown = (signal) => {
     try { await cache.disconnect?.(); } catch {}
     process.exit(0);
   });
-  // Force exit if connections don't drain within 10 s
+  // Force exit if in-flight requests don't finish in time. Must exceed the
+  // longest request (vsearch timeout × attempts) and stay below the pod's
+  // terminationGracePeriodSeconds.
   setTimeout(() => {
     console.error('Shutdown timeout exceeded, forcing exit');
     process.exit(1);
-  }, 10_000).unref();
+  }, SHUTDOWN_TIMEOUT_MS).unref();
 };
 
 process.on('SIGTERM', () => shutdown('SIGTERM'));

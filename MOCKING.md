@@ -141,8 +141,9 @@ but do not parse it. Example:
 - **Body limit is 10 MB** for JSON.
 - `504` means vsearch timed out, `502` means it was unreachable — both upstream, both worth a
   retry. These two are transcribed from `index.mjs`, not reproduced live.
-- `GET /health` returns `200` with `{status, vsearch, cache}`, or `503` if either dependency is
-  down. Useful as a readiness gate in tests.
+- `GET /health` returns `200` with `{status, vsearch, cache}` while vsearch is reachable
+  (`status: "degraded"` if only the cache is down), or `503` if vsearch is down. Useful as a
+  readiness gate in tests.
 
 ## Caveat
 

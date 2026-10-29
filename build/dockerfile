@@ -9,6 +9,7 @@ COPY package*.json ./
 # Copy source
 COPY caches ./caches
 COPY *.mjs .
+COPY scripts ./scripts
 
 # ---- Test the app ----
 FROM base AS test
@@ -28,4 +29,6 @@ RUN npm ci && npm prune
 USER node
 
 EXPOSE 3000
-CMD ["npm", "start"]
+# Run node directly so it is PID 1 and receives SIGTERM; through npm the signal
+# never reaches the graceful-shutdown handler.
+CMD ["node", "index.mjs"]

@@ -74,19 +74,33 @@ export async function assignTaxonomyToOccurrence(occurrence, searchSequences) {
  *   - sequence             {string}  the DNA sequence string
  *   - invalid              {boolean} true if the sequence failed QC — skip these
  *
- * Only entries with a non-empty sequence and invalid !== true are included.
+ * Only entries with a non-empty sequence, a usable ID and invalid !== true are
+ * included.
  *
  * @param {object} occurrence
  * @returns {{ nucleotideSequenceID: string, sequence: string }[]}
  */
-function extractSequences(occurrence) {
-  const entries = occurrence.nucleotideSequence;
+export function extractSequences(occurrence) {
+  const entries = occurrence?.nucleotideSequence;
   if (!Array.isArray(entries) || entries.length === 0) {
     return [];
   }
   return entries
-    .filter(entry => entry.sequence && !entry.invalid)
+    .filter(entry => entry?.sequence && !entry.invalid && isUsableSequenceId(entry.nucleotideSequenceID))
     .map(({ nucleotideSequenceID, sequence }) => ({ nucleotideSequenceID, sequence }));
+}
+
+/**
+ * The ID becomes both the FASTA header and the cache key, so it must be a
+ * non-empty string with no whitespace (vsearch cuts the header there) and no
+ * '>' (which would start a new FASTA record). A missing ID would otherwise
+ * become ">undefined" and share one cache entry with every other missing ID.
+ *
+ * @param {unknown} id
+ * @returns {boolean}
+ */
+function isUsableSequenceId(id) {
+  return typeof id === 'string' && /^[^\s>]+$/.test(id);
 }
 
 /**

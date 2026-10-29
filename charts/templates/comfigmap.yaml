@@ -17,4 +17,11 @@ data:
   DRAGONFLY_URL: {{ .Values.dragonfly.url | quote }}
   DRAGONFLY_PORT: {{ .Values.dragonfly.port | quote }}
   {{- end }}
-  VSEARCH_TIMEOUT_MS: {{ .Values.vsearchTimeout | quote }}
+  VSEARCH_TIMEOUT_MS: {{ .Values.vsearch.timeoutMs | quote }}
+  VSEARCH_BATCH_SIZE: {{ .Values.vsearch.batchSize | quote }}
+  VSEARCH_CONCURRENCY: {{ .Values.vsearch.concurrency | quote }}
+  VSEARCH_RETRIES: {{ .Values.vsearch.retries | quote }}
+  REFERENCE_DB_VERSION: {{ required "referenceDbVersion is required: it versions the cache" .Values.referenceDbVersion | quote }}
+  CACHE_TOP_N: {{ .Values.cacheTopN | quote }}
+  CACHE_TIMEOUT_MS: {{ .Values.cacheTimeoutMs | quote }}
+  SHUTDOWN_TIMEOUT_MS: {{ .Values.shutdownTimeoutMs | quote }}

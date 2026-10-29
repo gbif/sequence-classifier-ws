@@ -38,14 +38,18 @@ spec:
 {{- toYaml . | nindent 10 }}
 {{- end }}
 {{- end }}
+      # Longer than SHUTDOWN_TIMEOUT_MS, so in-flight batches can finish.
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}{{ .Values.image.name }}:{{ default .Chart.AppVersion .Values.image.tag }}"
           imagePullPolicy: IfNotPresent
+          # exec replaces the shell, so node is PID 1 and receives SIGTERM
+          # directly and can drain in-flight requests before exiting.
           args:
             - |
               date
-              npm start
+              exec node index.mjs
           command:
           - /bin/sh
           - -x
@@ -56,6 +60,29 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
+          startupProbe:
+            httpGet:
+              path: /livez
+              port: http
+            failureThreshold: {{ .Values.startup.failureThreshold }}
+            periodSeconds: {{ .Values.startup.periodSeconds }}
+            timeoutSeconds: {{ .Values.startup.timeoutSeconds }}
+          # Liveness checks only the process, so a vsearch outage never restarts pods.
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: http
+            failureThreshold: {{ .Values.liveness.failureThreshold }}
+            periodSeconds: {{ .Values.liveness.periodSeconds }}
+            timeoutSeconds: {{ .Values.liveness.timeoutSeconds }}
+          # Readiness requires vsearch; a cache outage alone keeps the pod ready.
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            failureThreshold: {{ .Values.readiness.failureThreshold }}
+            periodSeconds: {{ .Values.readiness.periodSeconds }}
+            timeoutSeconds: {{ .Values.readiness.timeoutSeconds }}
           envFrom:
           - configMapRef:
               name: {{ include "helpers.releaseName" . }}-conf

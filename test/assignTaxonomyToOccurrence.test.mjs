@@ -114,3 +114,20 @@ test('invalid sequences are excluded before querying', async () => {
   await assignTaxonomyToOccurrence(occ, trackingSearch);
   assert.deepEqual(queriedIds, ['seq2']);
 });
+
+test('sequences without a usable nucleotideSequenceID are excluded before querying', async () => {
+  const occ = occurrence([
+    { sequence: 'ACGT' },                                     // missing
+    { nucleotideSequenceID: '', sequence: 'ACGT' },           // empty
+    { nucleotideSequenceID: 'has space', sequence: 'ACGT' },  // would split the FASTA header
+    { nucleotideSequenceID: 'a>b', sequence: 'ACGT' },        // would start a new FASTA record
+    { nucleotideSequenceID: 'seq2', sequence: 'TTTT' },
+  ]);
+  let queriedIds = [];
+  const trackingSearch = async (fasta) => {
+    queriedIds = fasta.split('\n').filter(l => l.startsWith('>')).map(l => l.slice(1));
+    return { seq2: [match({})] };
+  };
+  await assignTaxonomyToOccurrence(occ, trackingSearch);
+  assert.deepEqual(queriedIds, ['seq2']);
+});

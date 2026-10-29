@@ -15,9 +15,15 @@ function fromEnv(name, fallback) {
   throw new Error(`Missing required config: ${name} (or ${name}_FILE)`);
 }
 
+// Cached results are only valid for the reference database (and vsearch
+// parameters) that produced them, so the version is part of every cache key.
+// Bump REFERENCE_DB_VERSION whenever the .udb is rebuilt or the vsearch server
+// flags change; old entries are then simply never read again.
 const CACHE = {
-  dataBaseName: fromEnv('DB_NAME','vsearch_testing'),
+  dataBaseName: fromEnv('DB_NAME', 'vsearch_testing'),
+  referenceVersion: fromEnv('REFERENCE_DB_VERSION', 'unversioned'),
 };
+CACHE.namespace = `${CACHE.dataBaseName}:${CACHE.referenceVersion}`;
 
 const HBASE = {
   host: fromEnv('HBASE_URL','127.0.0.1'),
