@@ -2,7 +2,9 @@ import express from 'express';
 import { createRequire } from 'module';
 import { pickBestMatch } from './pickBestMatch.mjs';
 import { assignTaxonomyToOccurrence } from './assignTaxonomyToOccurrence.mjs';
+import PQueue from 'p-queue';
 
+const queue = new PQueue({ concurrency: 4 });
 const _require = createRequire(import.meta.url);
 const cache = _require('./caches/index.js');
 const CACHE_DB = _require('./caches/config.js').CACHE.dataBaseName;
@@ -157,6 +159,13 @@ const app = express();
 app.use(express.json({ limit: '10mb' }));                    // for /occurrence/classify
 app.use(express.text({ type: 'text/*', limit: '50mb' }));   // for /search/batch
 
+function logQueueSize() {
+  console.log(`Waiting: ${queue.size}, running: ${queue.pending}`);
+}
+
+queue.on('add', () => console.log(`Added. Waiting: ${queue.size}, running: ${queue.pending}`));
+queue.on('next', () => console.log(`Finished one. Waiting: ${queue.size}, running: ${queue.pending}`));
+
 app.post('/search/batch', async (req, res) => {
   const outfmt = req.query.outfmt || 'blast6out';
   if (!['blast6out', 'alnout'].includes(outfmt)) {
@@ -170,12 +179,12 @@ app.post('/search/batch', async (req, res) => {
 
   let vsearchRes;
   try {
-    vsearchRes = await fetch(`${VSEARCH_URL}?outfmt=${outfmt}`, {
+    vsearchRes = await queue.add(() => fetch(`${VSEARCH_URL}?outfmt=${outfmt}`, {
       method: 'POST',
       body,
       headers: { 'Content-Type': 'text/plain' },
       signal: AbortSignal.timeout(VSEARCH_TIMEOUT_MS),
-    });
+    }));
   } catch (err) {
     console.error('Upstream error:', err.message);
     if (err.name === 'TimeoutError') {
@@ -359,8 +368,6 @@ app.post('/occurrence/classify', async (req, res) => {
 //
 app.post('/occurrence/classify/batch', async (req, res) => {
   const occurrences = req.body;
-  console.log(req.id)
-  console.timeStamp("Starting")
   if (!Array.isArray(occurrences)) {
     return res.status(400).json({ error: 'Request body must be an array of occurrence objects' });
   }
@@ -382,8 +389,6 @@ app.post('/occurrence/classify/batch', async (req, res) => {
   if (seqMap.size > 0) {
     const fasta = [...seqMap.entries()].map(([id, seq]) => `>${id}\n${seq}`).join('\n');
     try {
-      console.timeEnd("handling failed")
-      console.error('Classification error:', err.message);
       matchesMap = await vsearchQueryWithCache(fasta);
     } catch (err) {
       console.error('Batch vsearch error:', err.message);
@@ -410,7 +415,6 @@ app.post('/occurrence/classify/batch', async (req, res) => {
       }
     })
   );
-  console.timeEnd("handled request")
   res.json(results);
 });
 
