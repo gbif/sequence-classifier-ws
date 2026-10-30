@@ -114,3 +114,7 @@ Also under test: `vsearchClient` (chunking, concurrency cap, retry rules) and `m
 Current rules under test:
 - `pickBestMatch`: identity desc, qcovs desc tiebreaker; topN limit
 - `assignTaxonomyToOccurrence`: null on empty/invalid sequences; highest-identity sequence wins across multiple sequences; invalid sequences and unusable IDs excluded before querying
+
+## Tests against a deployed service
+
+`loadtest/` (Python): `pytest loadtest/ -v` checks a deployed classifier (`CLASSIFIER_URL`) — fixture match, cold vs cached batch, optional comparison with the previous version (`OLD_CLASSIFIER_URL`). `locustfile.py` is a load test. Cold requests use fresh sequence IDs so vsearch really searches; they load the shared test vsearch. Details and measured throughput: `loadtest/README.md`.

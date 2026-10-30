@@ -340,7 +340,18 @@ npm test
 ✔ higher qcovs wins when identity is tied
 ✔ multiple sequences: sequence with highest identity wins
 ...
-ℹ tests 30  pass 30  fail 0
+ℹ tests 31  pass 31  fail 0
 ```
 
 Tests live in `test/`. Each `test()` block covers exactly one rule. When adding a new ranking rule, write the test first — it serves as a precise specification of what the rule should do before any code is written.
+
+### Against a deployed service
+
+`loadtest/` has a pytest suite (correctness, cold vs cached timings, comparison with the
+previous version) and a Locust load test, both run against a deployed classifier, plus
+how to measure vsearch throughput on its own. See [`loadtest/README.md`](loadtest/README.md).
+
+```bash
+pip install -r loadtest/requirements.txt
+pytest loadtest/ -v
+```
