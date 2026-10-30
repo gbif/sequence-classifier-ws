@@ -99,6 +99,7 @@ Results so far (test data; 2 vsearch replicas unless noted):
 | 2026-10-29 | 4 cores each | 104–121 s (8–9 seq/s) | 9.4 seq/s |
 | 2026-10-30 | 8 cores each | 66–79 s (12–15 seq/s) | 17.6 seq/s (batch 25), 18.6 (100), 19.6 (200) |
 | 2026-10-30 | **6 replicas**, 8 cores each | 39 s (24 seq/s) | 26 seq/s (batch 25, same at 6/12/18 in flight), 34 (batch 100); 3,900 seqs |
+| 2026-10-30 | 6 replicas, after rescheduling | 40 s (24 seq/s, service at 4 in flight) | 39.8 seq/s (batch 25, 12 in flight); 3,900 seqs |
 
 Each replica serves one request at a time. With 8 cores a single request runs ~1.4×
 (25 sequences) to ~1.8× (100 sequences) faster than with 4, so larger batches use the
