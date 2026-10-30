@@ -92,12 +92,13 @@ CACHE=none VSEARCH_URL=http://c6n11.gbif-test.org:31280/search/batch \
 The progress line just before "Checkpoint at line …" reports seq/s. Delete `sample.tsv.checkpoint` before running again,
 or the script resumes from the end and does nothing.
 
-Results so far (2 replicas, 959 sequences, the service's cold batch):
+Results so far (2 vsearch replicas, test data):
 
-| Date | vsearch resources | Cold batch | Throughput |
+| Date | vsearch resources | Service cold batch (959 seqs) | vsearch alone (975 seqs, backfill script) |
 |---|---|---|---|
-| 2026-10-29 | 2 replicas × 4 cores | 104–121 s | 8–9.4 seq/s |
-| 2026-10-30 | 2 replicas × 8 cores | 98 s | ~9.8 seq/s |
+| 2026-10-29 | 4 cores each | 104–121 s (8–9 seq/s) | 9.4 seq/s |
+| 2026-10-30 | 8 cores each | 79 s (12 seq/s) | 17.6 seq/s (batch 25), 18.6 (100), 19.6 (200) |
 
-Each replica serves one request at a time at ~6 seq/s, so throughput scales with
-replicas, not cores.
+Each replica serves one request at a time. With 8 cores a single request runs ~1.4×
+(25 sequences) to ~1.8× (100 sequences) faster than with 4, so larger batches use the
+cores slightly better.
