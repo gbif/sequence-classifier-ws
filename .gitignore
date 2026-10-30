@@ -3,3 +3,7 @@
 
 node_modules/
 .DS_Store
+
+# Python (loadtest/)
+__pycache__/
+.pytest_cache/
