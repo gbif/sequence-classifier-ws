@@ -30,6 +30,10 @@ const byRank = (a, b) => (b.identity - a.identity) || (b.qcovs - a.qcovs);
 // The reference id is the first header field.
 const refIdOf = header => header.split('|', 1)[0];
 
+// Headers parsed from a vsearch response are V8 sliced strings that keep the
+// whole response body alive; copy them before they go into the long-lived LRU.
+const detach = s => Buffer.from(s, 'utf8').toString('utf8');
+
 export function encodeMatch(match) {
   return [refIdOf(match.header), ...STAT_FIELDS.map(f => match[f])];
 }
@@ -152,7 +156,7 @@ export function createMatchCache({
       // Headers first, so a reader never sees a sequence entry whose
       // references are not stored yet.
       await cacheCall(() => cache.setMany(refNamespace, [...refEntries]));
-      for (const [refId, header] of refEntries) headers.set(refId, header);
+      for (const [refId, header] of refEntries) headers.set(detach(refId), detach(header));
       await cacheCall(() => cache.setMany(namespace, seqEntries));
     } catch (err) {
       if (strictWrites) throw err;

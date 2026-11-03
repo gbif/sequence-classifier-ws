@@ -289,6 +289,50 @@ are not read.
 A cache that is down, errors or takes longer than `CACHE_TIMEOUT_MS` is treated as a
 miss, and the request goes to vsearch.
 
+### Creating the HBase table
+
+The service does not create its table. On connecting it only checks that `HBASE_TABLE`
+exists; if not, it logs `table … not found` and treats every lookup as a miss.
+
+The table has one column family, `ref`:
+
+| Row key | Column | Value |
+|---|---|---|
+| `nucleotideSequenceID` | `ref:<DB_NAME>:<REFERENCE_DB_VERSION>` | JSON list of the top hits, `[]` when none |
+| reference id (first header field) | `ref:<DB_NAME>:<REFERENCE_DB_VERSION>:ref` | the reference's FASTA header |
+
+Create it from the HBase shell:
+
+```
+create 'blast_cache',
+  {NAME => 'ref', VERSIONS => 1, BLOOMFILTER => 'ROW', COMPRESSION => 'SNAPPY'},
+  {NUMREGIONS => 16, SPLITALGO => 'HexStringSplit'}
+```
+
+- `VERSIONS => 1`: a cell is only ever overwritten with the same result, so there is no
+  history worth keeping.
+- `BLOOMFILTER => 'ROW'`: most lookups during a backfill are for rows that do not exist
+  yet; the row bloom filter answers those without reading files.
+- `COMPRESSION => 'SNAPPY'`: the values are repetitive JSON. Use a codec that is
+  installed on the region servers (`SNAPPY`, `ZSTD`, …) or leave the option out.
+- Pre-splitting: `nucleotideSequenceID` is a 32-character hex MD5, so `HexStringSplit`
+  spreads rows, and the backfill's write load, evenly from the start. Reference ids
+  are not hex and fall into whichever region matches their first character; there are
+  far fewer of them. Size the regions roughly: about 1 KB per sequence, so 24M
+  sequences is ~25 GB before compression.
+
+To put the table in an HBase namespace, create it as `'<ns>:blast_cache'` and set
+`HBASE_TABLE=<ns>:blast_cache`.
+
+Check it with `describe 'blast_cache'`, then start the service with `CACHE=hbase` and
+look for `Cache connected (hbase <host>:<port>/<table>)` in the log; `GET /health`
+reports `degraded` while the table is missing or unreachable. `scripts/backfill.mjs`
+exits after 30 s if the table is missing, so create it before running a backfill.
+
+A new reference DB version adds columns to the same rows, so there is nothing to
+create when `REFERENCE_DB_VERSION` changes. Old versions' cells are never read again;
+to reclaim the space, delete those columns or recreate the table.
+
 ## Backfilling the cache
 
 At indexing time the service should answer almost entirely from the cache. Fill it up
