@@ -10,9 +10,10 @@
   },
   "dependencies": {
     "express": "^4.18.2",
+    "p-queue": "^10.0.0",
     "redis": "^4.7.0",
     "thrift": "^0.17.0",
-    "p-queue": "^10.0.0"
+    "undici": "^8.12.4"
   },
   "engines": {
     "node": ">=18"

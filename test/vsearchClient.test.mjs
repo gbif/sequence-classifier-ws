@@ -76,3 +76,36 @@ test('does not retry a timeout, and preserves the error name', async () => {
   await assert.rejects(client(fetch).search(seqs(1)), { name: 'TimeoutError' });
   assert.equal(calls, 1);
 });
+
+test("does not retry undici's own header timeout, and names it in the message", async () => {
+  let calls = 0;
+  const fetch = async () => {
+    calls++;
+    throw new TypeError('fetch failed', { cause: Object.assign(new Error('Headers Timeout Error'), { code: 'UND_ERR_HEADERS_TIMEOUT' }) });
+  };
+  await assert.rejects(client(fetch).search(seqs(1)), /fetch failed \(UND_ERR_HEADERS_TIMEOUT\)/);
+  assert.equal(calls, 1);
+});
+
+test('retries a connection error, and names its cause in the message', async () => {
+  let calls = 0;
+  const fetch = async () => {
+    calls++;
+    throw new TypeError('fetch failed', { cause: Object.assign(new Error('read ECONNRESET'), { code: 'ECONNRESET' }) });
+  };
+  await assert.rejects(client(fetch, { retries: 1 }).search(seqs(1)), /fetch failed \(ECONNRESET\)/);
+  assert.equal(calls, 2);
+});
+
+test('the default fetch gives up at timeoutMs with a TimeoutError', async () => {
+  // Real HTTP through the undici dispatcher: the server holds the response past timeoutMs.
+  const http = await import('node:http');
+  const server = http.createServer((req, res) => setTimeout(() => res.end(''), 300)).listen(0);
+  try {
+    const { port } = server.address();
+    const c = createVsearchClient({ url: `http://127.0.0.1:${port}/search/batch`, timeoutMs: 100, batchSize: 1, concurrency: 1, retries: 0 });
+    await assert.rejects(c.search(seqs(1)), { name: 'TimeoutError' });
+  } finally {
+    server.closeAllConnections(); server.close();
+  }
+});

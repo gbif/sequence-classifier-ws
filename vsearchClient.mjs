@@ -11,6 +11,7 @@
  */
 
 import PQueue from 'p-queue';
+import { Agent, fetch as undiciFetch } from 'undici';
 
 // Field order matches the 23-field pipe-separated FASTA header
 const HEADER_FIELDS = [
@@ -168,8 +169,16 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 // - A timeout means vsearch is behind. Each replica works through one request
 //   at a time and keeps going on a request the client abandoned, so a retry
 //   would only add load to a server that is already overloaded.
+const UNDICI_TIMEOUTS = new Set(['UND_ERR_HEADERS_TIMEOUT', 'UND_ERR_BODY_TIMEOUT']);
+const isTimeout = err => err.name === 'TimeoutError' || UNDICI_TIMEOUTS.has(err.cause?.code);
 const isRetryable = err =>
-  err.name !== 'TimeoutError' && !(err.status >= 400 && err.status < 500 && err.status !== 429);
+  !isTimeout(err) && !(err.status >= 400 && err.status < 500 && err.status !== 429);
+
+// fetch's own header and body timeouts (300 s each by default) would cut off a
+// request that is still queued on a busy replica, as a plain 'fetch failed'.
+// They are off, so timeoutMs is the only limit.
+const dispatcher = new Agent({ headersTimeout: 0, bodyTimeout: 0 });
+const defaultFetch = (url, init) => undiciFetch(url, { ...init, dispatcher });
 
 /**
  * @param {object} opts
@@ -182,7 +191,7 @@ const isRetryable = err =>
  * @param {Function} [opts.fetch]    injected for tests
  */
 export function createVsearchClient({
-  url, timeoutMs, batchSize, concurrency, retries, logQueue = false, fetch = globalThis.fetch,
+  url, timeoutMs, batchSize, concurrency, retries, logQueue = false, fetch = defaultFetch,
 }) {
   const queue = new PQueue({ concurrency });
   // Per-chunk queue logging, for debugging. Off by default: at backfill volume
@@ -193,13 +202,20 @@ export function createVsearchClient({
   }
 
   async function postChunk(fasta, outfmt) {
-    const res = await fetch(`${url}?outfmt=${outfmt}`, {
-      method: 'POST',
-      body: fasta,
-      headers: { 'Content-Type': 'text/plain' },
-      signal: AbortSignal.timeout(timeoutMs),
-    });
-    const text = await res.text();
+    let res, text;
+    try {
+      res = await fetch(`${url}?outfmt=${outfmt}`, {
+        method: 'POST',
+        body: fasta,
+        headers: { 'Content-Type': 'text/plain' },
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+      text = await res.text();
+    } catch (err) {
+      // 'fetch failed' alone does not say why; the reason is in err.cause
+      if (err.cause) err.message += ` (${err.cause.code ?? err.cause.message})`;
+      throw err;
+    }
     if (!res.ok) {
       const err = new Error(`vsearch error ${res.status}: ${text}`);
       err.status = res.status;
