@@ -163,33 +163,65 @@ export function createMatchCache({
     }
   }
 
+  // Searches seqs (all cache misses), keeps the top N per sequence and stores
+  // them. Returns id → matches, [] for a sequence with no hits.
+  async function searchAndStore(seqs) {
+    const ids = Object.keys(seqs);
+    const fresh = await search(seqs);
+    const result = {};
+    for (const id of ids) {
+      const matches = (fresh[id] ?? []).sort(byRank).slice(0, topN);
+      if (matches.length === 0) stats.noHits++;
+      result[id] = matches;
+    }
+    stats.searched += ids.length;
+    await store(result);
+    return result;
+  }
+
+  async function lookupMisses(seqs) {
+    const ids = Object.keys(seqs);
+    const result = await lookup(ids);
+    const missIds = ids.filter(id => !(id in result));
+    stats.cacheHits += ids.length - missIds.length;
+    stats.cacheMisses += missIds.length;
+    return { result, missIds };
+  }
+
   /**
    * @param {Object<string,string>} seqs  id → sequence
    * @returns {Promise<Object<string,object[]>>} id → top N matches, best first;
    *   [] for a sequence with no hits
    */
   async function query(seqs) {
-    const ids = Object.keys(seqs);
-    const result = await lookup(ids);
-
-    const missIds = ids.filter(id => !(id in result));
-    stats.cacheHits += ids.length - missIds.length;
-    stats.cacheMisses += missIds.length;
-
+    const { result, missIds } = await lookupMisses(seqs);
     if (missIds.length > 0) {
-      const fresh = await search(Object.fromEntries(missIds.map(id => [id, seqs[id]])));
-      const toStore = {};
-      for (const id of missIds) {
-        const matches = (fresh[id] ?? []).sort(byRank).slice(0, topN);
-        if (matches.length === 0) stats.noHits++;
-        toStore[id] = matches;
-        result[id] = matches;
-      }
-      stats.searched += missIds.length;
-      await store(toStore);
+      Object.assign(result, await searchAndStore(Object.fromEntries(missIds.map(id => [id, seqs[id]]))));
     }
     return result;
   }
 
-  return { query, stats };
+  /**
+   * Fill the cache for seqs, for the backfill. One cache lookup for all of
+   * them, then the misses are searched and stored in batches of batchSize, each
+   * stored as soon as it returns. A batch whose search or write fails is
+   * reported; the others are kept.
+   *
+   * @param {Object<string,string>} seqs  id → sequence
+   * @param {number} batchSize            sequences per search (one vsearch request)
+   * @returns {Promise<{ failed: { ids: string[], error: Error }[] }>}
+   */
+  async function fill(seqs, batchSize) {
+    const { missIds } = await lookupMisses(seqs);
+    const batches = [];
+    for (let i = 0; i < missIds.length; i += batchSize) batches.push(missIds.slice(i, i + batchSize));
+    const settled = await Promise.allSettled(
+      batches.map(ids => searchAndStore(Object.fromEntries(ids.map(id => [id, seqs[id]])))),
+    );
+    const failed = [];
+    settled.forEach((s, i) => { if (s.status === 'rejected') failed.push({ ids: batches[i], error: s.reason }); });
+    return { failed };
+  }
+
+  return { query, fill, stats };
 }

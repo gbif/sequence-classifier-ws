@@ -116,3 +116,39 @@ test('entries from another namespace (reference DB version) are not read', async
   await v2.query({ s1: 'ACGT' });
   assert.equal(searched.at(-1), 'v2');
 });
+
+test('fill searches misses in batches and skips cached sequences', async () => {
+  const { mc, searched } = setup(seqs => Object.fromEntries(Object.keys(seqs).map(id => [id, [hit('R1', 99)]])));
+  await mc.query({ s1: 'ACGT' });
+  searched.length = 0;
+  const { failed } = await mc.fill({ s1: 'ACGT', s2: 'ACGT', s3: 'ACGT', s4: 'ACGT', s5: 'ACGT' }, 2);
+  assert.deepEqual(failed, []);
+  assert.deepEqual(searched, [['s2', 's3'], ['s4', 's5']]);
+});
+
+test('fill keeps the batches that succeed when one search fails', async () => {
+  const { mc, searched } = setup(seqs => {
+    if ('s3' in seqs) throw new Error('timeout');
+    return Object.fromEntries(Object.keys(seqs).map(id => [id, [hit('R1', 99)]]));
+  });
+  const { failed } = await mc.fill({ s1: 'A', s2: 'A', s3: 'A', s4: 'A', s5: 'A' }, 2);
+  assert.equal(failed.length, 1);
+  assert.deepEqual(failed[0].ids, ['s3', 's4']);
+  assert.equal(failed[0].error.message, 'timeout');
+  searched.length = 0;
+  await mc.query({ s1: 'A', s2: 'A', s5: 'A' });
+  assert.deepEqual(searched, []);
+});
+
+test('fill reports a batch whose strict cache write fails', async () => {
+  const cache = memoryCache();
+  const setMany = cache.setMany;
+  cache.setMany = async (ns, entries) => {
+    if (entries.some(([id]) => id === 's2')) throw new Error('write failed');
+    return setMany(ns, entries);
+  };
+  const { mc } = setup(seqs => Object.fromEntries(Object.keys(seqs).map(id => [id, [hit('R1', 99)]])),
+    { cache, strictWrites: true });
+  const { failed } = await mc.fill({ s1: 'A', s2: 'A' }, 1);
+  assert.deepEqual(failed.map(f => f.ids), [['s2']]);
+});

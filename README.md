@@ -347,8 +347,10 @@ REFERENCE_DB_VERSION=2026-10 CACHE=hbase \
 - Progress, throughput and an ETA are logged every 10 s.
 - Progress is checkpointed to `sequences.tsv.checkpoint`; rerunning the same command
   resumes. Ctrl-C stops after in-flight chunks finish.
-- A chunk that still fails after retries is written to `sequences.tsv.failed.tsv`; rerun
-  the script on that file.
+- Each vsearch request (`VSEARCH_BATCH_SIZE` sequences) is written to the cache as soon as
+  it returns. A request that still fails after retries (or times out), or whose cache
+  write fails, has its sequences written to `sequences.tsv.failed.tsv`; the rest of the
+  chunk is kept. Rerun the script on that file.
 - Writes are strict: a failed cache write fails the chunk, rather than being ignored as
   it is in the service.
 

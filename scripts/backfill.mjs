@@ -18,8 +18,10 @@
  *   --limit N       stop after N input lines (benchmarking)
  *   --total N       expected line count, for the ETA
  *   --checkpoint P  progress file (default <input>.checkpoint)
- *   --failures P    sequences whose chunk failed, same TSV format
- *                   (default <input>.failed.tsv); rerun the script on it
+ *   --failures P    sequences whose vsearch request or cache write failed,
+ *                   same TSV format (default <input>.failed.tsv); rerun the
+ *                   script on it. Only the failed VSEARCH_BATCH_SIZE batch is
+ *                   written, not the whole chunk.
  *
  * Resuming: the checkpoint records how many input lines are fully done, so a
  * rerun after a crash or Ctrl-C continues from there. Sequences already in the
@@ -74,10 +76,12 @@ const int = (name, fallback) => {
   return Number.isNaN(n) ? fallback : n;
 };
 
+const BATCH_SIZE = int('VSEARCH_BATCH_SIZE', 25);
+
 const vsearch = createVsearchClient({
   url:         process.env.VSEARCH_URL || 'http://127.0.0.1:8000/search/batch',
   timeoutMs:   int('VSEARCH_TIMEOUT_MS', 120_000),
-  batchSize:   int('VSEARCH_BATCH_SIZE', 25),
+  batchSize:   BATCH_SIZE,
   concurrency: int('VSEARCH_CONCURRENCY', 4),
   retries:     int('VSEARCH_RETRIES', 2),
 });
@@ -89,7 +93,7 @@ const matchCache = createMatchCache({
   topN:         int('CACHE_TOP_N', 10),
   timeoutMs:    int('CACHE_TIMEOUT_MS', 5000),
   refCacheSize: int('REF_CACHE_SIZE', 2_000_000),
-  // A lost write here is lost work; fail the chunk so it lands in --failures.
+  // A lost write here is lost work; fail the batch so it lands in --failures.
   strictWrites: true,
 });
 
@@ -148,13 +152,20 @@ process.on('SIGINT', () => {
 
 async function runChunk(start, end, rows) {
   const seqs = Object.fromEntries(rows);
+  let failed;
   try {
-    await matchCache.query(seqs);
-    counts.sequences += rows.length;
+    // Each vsearch batch is stored as it returns, so a slow request loses only
+    // its own sequences, not the whole chunk.
+    ({ failed } = await matchCache.fill(seqs, BATCH_SIZE));
   } catch (err) {
-    counts.failed += rows.length;
-    console.error(`Chunk at line ${start} failed (${rows.length} sequences): ${err.message}`);
-    appendFileSync(FAILURES, rows.map(([id, seq]) => `${id}\t${seq}\n`).join(''));
+    failed = [{ ids: Object.keys(seqs), error: err }];
+  }
+  const failedCount = failed.reduce((n, f) => n + f.ids.length, 0);
+  counts.sequences += rows.length - failedCount;
+  counts.failed += failedCount;
+  for (const { ids, error } of failed) {
+    console.error(`Chunk at line ${start}: batch of ${ids.length} sequences failed: ${error.message}`);
+    appendFileSync(FAILURES, ids.map(id => `${id}\t${seqs[id]}\n`).join(''));
   }
   markFinished(start, end);
 }
