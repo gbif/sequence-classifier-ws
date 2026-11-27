@@ -13,8 +13,9 @@
  *
  * Options:
  *   --chunk N       sequences per cache lookup / write round (default 1000)
- *   --parallel N    chunks in flight (default 4); vsearch load is capped
- *                   separately by VSEARCH_CONCURRENCY
+ *   --parallel N    chunks in flight (default 4). vsearch requests in flight
+ *                   are at most VSEARCH_CONCURRENCY, and at most
+ *                   N x ceil(chunk misses / VSEARCH_BATCH_SIZE)
  *   --limit N       stop after N input lines (benchmarking)
  *   --total N       expected line count, for the ETA
  *   --checkpoint P  progress file (default <input>.checkpoint)
@@ -38,7 +39,7 @@ import { createReadStream, existsSync, readFileSync, writeFileSync, renameSync, 
 import { createGunzip } from 'node:zlib';
 import { parseArgs } from 'node:util';
 import { createRequire } from 'node:module';
-import { createVsearchClient } from '../vsearchClient.mjs';
+import { createVsearchClient, vsearchConfigFromEnv } from '../vsearchClient.mjs';
 import { createMatchCache } from '../matchCache.mjs';
 import { extractSequences } from '../assignTaxonomyToOccurrence.mjs';
 
@@ -76,16 +77,11 @@ const int = (name, fallback) => {
   return Number.isNaN(n) ? fallback : n;
 };
 
-const BATCH_SIZE = int('VSEARCH_BATCH_SIZE', 25);
-const VSEARCH_CONCURRENCY = int('VSEARCH_CONCURRENCY', 4);
+const VSEARCH_CONFIG = vsearchConfigFromEnv();
+const BATCH_SIZE = VSEARCH_CONFIG.batchSize;
+const VSEARCH_CONCURRENCY = VSEARCH_CONFIG.concurrency;
 
-const vsearch = createVsearchClient({
-  url:         process.env.VSEARCH_URL || 'http://127.0.0.1:8000/search/batch',
-  timeoutMs:   int('VSEARCH_TIMEOUT_MS', 120_000),
-  batchSize:   BATCH_SIZE,
-  concurrency: VSEARCH_CONCURRENCY,
-  retries:     int('VSEARCH_RETRIES', 2),
-});
+const vsearch = createVsearchClient(VSEARCH_CONFIG);
 
 const matchCache = createMatchCache({
   cache,
@@ -203,12 +199,14 @@ if (startLine > 0) console.log(`Resuming from line ${startLine} (${CHECKPOINT})`
 console.log(`Cache ${process.env.CACHE || 'dragonfly'}, namespace ${CACHE_CONFIG.namespace}`);
 console.log(`Chunk ${CHUNK}, parallel chunks ${PARALLEL}, vsearch batch ${BATCH_SIZE},` +
   ` concurrency ${VSEARCH_CONCURRENCY}`);
-// Throughput is bounded by VSEARCH_CONCURRENCY, not by --chunk or --parallel: each
-// vsearch replica serves one request at a time, so this many replicas is the most that
-// can be working. See README, "Sizing VSEARCH_CONCURRENCY".
-if (VSEARCH_CONCURRENCY <= 4) {
-  console.log(`  note: VSEARCH_CONCURRENCY=${VSEARCH_CONCURRENCY} keeps at most` +
-    ` ${VSEARCH_CONCURRENCY} vsearch replicas busy; set it to about 3x the replica count`);
+// vsearch requests in flight are capped by VSEARCH_CONCURRENCY and also by the open
+// chunks: each chunk sends one request per VSEARCH_BATCH_SIZE cache misses, so at most
+// PARALLEL x ceil(CHUNK / BATCH_SIZE), and fewer when most of a chunk is already cached.
+// See README, "Sizing VSEARCH_CONCURRENCY".
+const maxFromChunks = PARALLEL * Math.ceil(CHUNK / BATCH_SIZE);
+if (maxFromChunks < VSEARCH_CONCURRENCY) {
+  console.log(`  note: --parallel ${PARALLEL} x --chunk ${CHUNK} allow at most ${maxFromChunks}` +
+    ` vsearch requests, below VSEARCH_CONCURRENCY=${VSEARCH_CONCURRENCY}; raise --parallel or --chunk`);
 }
 
 const inFlight = new Set();
