@@ -48,7 +48,7 @@ Configuration via environment variables:
 | `VSEARCH_URL` | `http://127.0.0.1:8000/search/batch` | vsearch server URL |
 | `VSEARCH_TIMEOUT_MS` | `120000` | Timeout for one vsearch request (one chunk); not retried |
 | `VSEARCH_BATCH_SIZE` | `25` | Sequences per vsearch request; larger requests are split |
-| `VSEARCH_CONCURRENCY` | `4` | vsearch requests in flight from this process, across all endpoints; about 2 × vsearch replicas |
+| `VSEARCH_CONCURRENCY` | `4` | vsearch requests in flight from this process, across all endpoints; caps how many vsearch replicas can be busy at once — see [Sizing `VSEARCH_CONCURRENCY`](#sizing-vsearch_concurrency) |
 | `VSEARCH_RETRIES` | `2` | Extra attempts for a chunk that fails with a network error or 5xx (timeouts are not retried) |
 | `VSEARCH_QUEUE_LOG` | unset | `true` logs every vsearch queue add/finish (debugging only) |
 | `CACHE` | `dragonfly` | Cache backend: `dragonfly`, `hbase`, or `none` (no cache) |
@@ -369,9 +369,36 @@ Measured against the GBIF test vsearch (2 replicas, `--maxaccepts/--maxrejects 1
 - 54% of sequences had no hits.
 - So throughput ≈ replicas × 6 seq/s: 24M sequences take ~23 days on 2 replicas,
   ~1 week on 7, ~3 days on 16.
-- The Service assigns connections to replicas at random, so two requests sometimes
-  queue on one replica while the other idles. Running `VSEARCH_CONCURRENCY` at about
-  twice the replica count keeps every replica busy.
+- `VSEARCH_CONCURRENCY` has to grow with the replica count, or most of the cluster
+  sits idle — see below.
+
+### Sizing `VSEARCH_CONCURRENCY`
+
+Every search in a process goes through one queue bounded by `VSEARCH_CONCURRENCY`, so
+that value is the number of vsearch requests that exist at any instant. Each replica
+serves one request at a time, so it is also a hard ceiling on how many replicas can be
+working — and because the Service places each connection on a replica at random, the
+usual number is lower still:
+
+| vsearch replicas | `VSEARCH_CONCURRENCY` 4 | `VSEARCH_CONCURRENCY` = 3 × replicas |
+|---|---|---|
+| 2 | 1.9 busy (94%) | 2.0 (100%) |
+| 6 | 3.1 busy (**52%**) | 5.8 (96%, c=18) |
+| 12 | 3.5 busy (**29%**) | 11.5 (96%, c=36) |
+
+Expected busy replicas is `n * (1 - (1 - 1/n)^c)` for `n` replicas and `c` requests in
+flight. The default of 4 is right for 2 replicas, which is what the throughput above was
+measured on, and it quietly wastes capacity at every larger replica count.
+
+Set it to roughly **3 × the vsearch replica count**. Oversubscribing is safe: a busy
+replica queues the request rather than rejecting it, and `VSEARCH_TIMEOUT_MS` (120 s by
+default) covers a queue several requests deep. The effective value is printed at startup
+by both the service and `scripts/backfill.mjs`.
+
+Note that `--chunk`, `--parallel` and `VSEARCH_BATCH_SIZE` cannot raise throughput — every
+search still funnels through the one queue. `--chunk` sets the cache-lookup size and
+checkpoint granularity, `--parallel` how many chunks may be open, and batch size was
+measured flat from 25 to 200.
 
 ## Testing
 

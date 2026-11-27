@@ -77,12 +77,13 @@ const int = (name, fallback) => {
 };
 
 const BATCH_SIZE = int('VSEARCH_BATCH_SIZE', 25);
+const VSEARCH_CONCURRENCY = int('VSEARCH_CONCURRENCY', 4);
 
 const vsearch = createVsearchClient({
   url:         process.env.VSEARCH_URL || 'http://127.0.0.1:8000/search/batch',
   timeoutMs:   int('VSEARCH_TIMEOUT_MS', 120_000),
   batchSize:   BATCH_SIZE,
-  concurrency: int('VSEARCH_CONCURRENCY', 4),
+  concurrency: VSEARCH_CONCURRENCY,
   retries:     int('VSEARCH_RETRIES', 2),
 });
 
@@ -200,6 +201,15 @@ const lines = readLines((input.endsWith('.gz') ? stream.pipe(createGunzip()) : s
 
 if (startLine > 0) console.log(`Resuming from line ${startLine} (${CHECKPOINT})`);
 console.log(`Cache ${process.env.CACHE || 'dragonfly'}, namespace ${CACHE_CONFIG.namespace}`);
+console.log(`Chunk ${CHUNK}, parallel chunks ${PARALLEL}, vsearch batch ${BATCH_SIZE},` +
+  ` concurrency ${VSEARCH_CONCURRENCY}`);
+// Throughput is bounded by VSEARCH_CONCURRENCY, not by --chunk or --parallel: each
+// vsearch replica serves one request at a time, so this many replicas is the most that
+// can be working. See README, "Sizing VSEARCH_CONCURRENCY".
+if (VSEARCH_CONCURRENCY <= 4) {
+  console.log(`  note: VSEARCH_CONCURRENCY=${VSEARCH_CONCURRENCY} keeps at most` +
+    ` ${VSEARCH_CONCURRENCY} vsearch replicas busy; set it to about 3x the replica count`);
+}
 
 const inFlight = new Set();
 let lineNo = 0;

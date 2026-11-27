@@ -105,9 +105,13 @@ vsearch:
   # Sequences per vsearch request. Throughput per replica barely changes with
   # batch size (measured 25-200), so keep requests small for latency.
   batchSize: 25
-  # vsearch requests in flight per pod. Each vsearch replica serves one
-  # request at a time, and the Service spreads connections randomly, so use
-  # about twice the number of vsearch replicas to keep all of them busy.
+  # vsearch requests in flight per pod, and so a ceiling on how many vsearch
+  # replicas can be working at once: each replica serves one request at a time,
+  # and the Service places each connection on a replica at random. Expected
+  # busy replicas = n * (1 - (1 - 1/n)^c) for n replicas, c requests in flight:
+  # at 6 replicas, c=4 keeps 3.1 busy (52%) while c=18 keeps 5.8 (96%).
+  # 4 is right for 2 replicas; set roughly 3x the vsearch replica count above
+  # that. Oversubscribing is safe — a busy replica queues rather than rejects.
   concurrency: 4
   # Extra attempts per request failing with a network error or 5xx
   # (timeouts are not retried)

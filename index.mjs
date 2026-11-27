@@ -20,6 +20,10 @@ const int = (name, fallback) => {
 
 const VSEARCH_URL = process.env.VSEARCH_URL || 'http://127.0.0.1:8000/search/batch';
 const VSEARCH_TIMEOUT_MS = int('VSEARCH_TIMEOUT_MS', 120_000);
+const VSEARCH_BATCH_SIZE = int('VSEARCH_BATCH_SIZE', 25);
+// Caps how many vsearch replicas can be busy at once; see README,
+// "Sizing VSEARCH_CONCURRENCY".
+const VSEARCH_CONCURRENCY = int('VSEARCH_CONCURRENCY', 4);
 const PORT = process.env.PORT || 3000;
 const SHUTDOWN_TIMEOUT_MS = int('SHUTDOWN_TIMEOUT_MS', 150_000);
 
@@ -28,8 +32,8 @@ const SHUTDOWN_TIMEOUT_MS = int('SHUTDOWN_TIMEOUT_MS', 150_000);
 const vsearch = createVsearchClient({
   url:         VSEARCH_URL,
   timeoutMs:   VSEARCH_TIMEOUT_MS,
-  batchSize:   int('VSEARCH_BATCH_SIZE', 25),
-  concurrency: int('VSEARCH_CONCURRENCY', 4),
+  batchSize:   VSEARCH_BATCH_SIZE,
+  concurrency: VSEARCH_CONCURRENCY,
   retries:     int('VSEARCH_RETRIES', 2),
   logQueue:    process.env.VSEARCH_QUEUE_LOG === 'true',
 });
@@ -257,6 +261,8 @@ const server = app.listen(PORT, () => {
   console.log(`vsearch proxy listening on http://localhost:${PORT}`);
   console.log(`Forwarding to ${VSEARCH_URL}`);
   console.log(`Cache backend: ${CACHE_BACKEND}, namespace ${CACHE_CONFIG.namespace}`);
+  console.log(`vsearch: batch ${VSEARCH_BATCH_SIZE}, concurrency ${VSEARCH_CONCURRENCY}` +
+    ` (at most ${VSEARCH_CONCURRENCY} replicas can be busy from this pod), timeout ${VSEARCH_TIMEOUT_MS} ms`);
   if (CACHE_CONFIG.referenceVersion === 'unversioned' && CACHE_BACKEND !== 'none') {
     console.warn('REFERENCE_DB_VERSION is not set; cached results will not be invalidated when the reference DB changes');
   }
