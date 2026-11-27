@@ -2,7 +2,7 @@ import express from 'express';
 import { createRequire } from 'module';
 import { pickBestMatch } from './pickBestMatch.mjs';
 import { assignTaxonomyToOccurrence, extractSequences } from './assignTaxonomyToOccurrence.mjs';
-import { createVsearchClient, parseFasta } from './vsearchClient.mjs';
+import { createVsearchClient, parseFasta, vsearchConfigFromEnv } from './vsearchClient.mjs';
 import { createMatchCache } from './matchCache.mjs';
 
 const _require = createRequire(import.meta.url);
@@ -18,21 +18,17 @@ const int = (name, fallback) => {
   return Number.isNaN(n) ? fallback : n;
 };
 
-const VSEARCH_URL = process.env.VSEARCH_URL || 'http://127.0.0.1:8000/search/batch';
-const VSEARCH_TIMEOUT_MS = int('VSEARCH_TIMEOUT_MS', 120_000);
+// VSEARCH_CONCURRENCY is per pod: with several pods, the requests in flight
+// against vsearch are pods x VSEARCH_CONCURRENCY. See README, "Sizing
+// VSEARCH_CONCURRENCY".
+const VSEARCH_CONFIG = vsearchConfigFromEnv();
+const VSEARCH_URL = VSEARCH_CONFIG.url;
 const PORT = process.env.PORT || 3000;
 const SHUTDOWN_TIMEOUT_MS = int('SHUTDOWN_TIMEOUT_MS', 150_000);
 
 // One queue per process caps the vsearch requests this pod has in flight,
 // across every endpoint.
-const vsearch = createVsearchClient({
-  url:         VSEARCH_URL,
-  timeoutMs:   VSEARCH_TIMEOUT_MS,
-  batchSize:   int('VSEARCH_BATCH_SIZE', 25),
-  concurrency: int('VSEARCH_CONCURRENCY', 4),
-  retries:     int('VSEARCH_RETRIES', 2),
-  logQueue:    process.env.VSEARCH_QUEUE_LOG === 'true',
-});
+const vsearch = createVsearchClient(VSEARCH_CONFIG);
 
 const matchCache = createMatchCache({
   cache,
@@ -257,6 +253,8 @@ const server = app.listen(PORT, () => {
   console.log(`vsearch proxy listening on http://localhost:${PORT}`);
   console.log(`Forwarding to ${VSEARCH_URL}`);
   console.log(`Cache backend: ${CACHE_BACKEND}, namespace ${CACHE_CONFIG.namespace}`);
+  const { batchSize, concurrency, timeoutMs } = VSEARCH_CONFIG;
+  console.log(`vsearch: batch ${batchSize}, concurrency ${concurrency} per pod, timeout ${timeoutMs} ms`);
   if (CACHE_CONFIG.referenceVersion === 'unversioned' && CACHE_BACKEND !== 'none') {
     console.warn('REFERENCE_DB_VERSION is not set; cached results will not be invalidated when the reference DB changes');
   }

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createVsearchClient } from '../vsearchClient.mjs';
+import { createVsearchClient, vsearchConfigFromEnv } from '../vsearchClient.mjs';
 
 // One blast6out row for a query, against a minimal 23-field header.
 const row = (id, identity = 99) =>
@@ -108,4 +108,15 @@ test('the default fetch gives up at timeoutMs with a TimeoutError', async () => 
   } finally {
     server.closeAllConnections(); server.close();
   }
+});
+
+test('vsearchConfigFromEnv uses the shared defaults and reads VSEARCH_* overrides', () => {
+  assert.deepEqual(vsearchConfigFromEnv({}), {
+    url: 'http://127.0.0.1:8000/search/batch', timeoutMs: 120_000,
+    batchSize: 25, concurrency: 4, retries: 2, logQueue: false,
+  });
+  const c = vsearchConfigFromEnv({ VSEARCH_CONCURRENCY: '18', VSEARCH_BATCH_SIZE: 'x', VSEARCH_QUEUE_LOG: 'true' });
+  assert.equal(c.concurrency, 18);
+  assert.equal(c.batchSize, 25, 'an unparseable value falls back to the default');
+  assert.equal(c.logQueue, true);
 });

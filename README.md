@@ -48,7 +48,7 @@ Configuration via environment variables:
 | `VSEARCH_URL` | `http://127.0.0.1:8000/search/batch` | vsearch server URL |
 | `VSEARCH_TIMEOUT_MS` | `120000` | Timeout for one vsearch request (one chunk); not retried |
 | `VSEARCH_BATCH_SIZE` | `25` | Sequences per vsearch request; larger requests are split |
-| `VSEARCH_CONCURRENCY` | `4` | vsearch requests in flight from this process, across all endpoints; about 2 × vsearch replicas |
+| `VSEARCH_CONCURRENCY` | `4` | vsearch requests in flight from this process (per pod), across all endpoints; the total over all pods caps how many vsearch replicas can be busy at once — see [Sizing `VSEARCH_CONCURRENCY`](#sizing-vsearch_concurrency) |
 | `VSEARCH_RETRIES` | `2` | Extra attempts for a chunk that fails with a network error or 5xx (timeouts are not retried) |
 | `VSEARCH_QUEUE_LOG` | unset | `true` logs every vsearch queue add/finish (debugging only) |
 | `CACHE` | `dragonfly` | Cache backend: `dragonfly`, `hbase`, or `none` (no cache) |
@@ -368,10 +368,61 @@ Measured against the GBIF test vsearch (2 replicas, `--maxaccepts/--maxrejects 1
   depending on the sequence mix). Batch size makes little difference (25 → 200).
 - 54% of sequences had no hits.
 - So throughput ≈ replicas × 6 seq/s: 24M sequences take ~23 days on 2 replicas,
-  ~1 week on 7, ~3 days on 16.
-- The Service assigns connections to replicas at random, so two requests sometimes
-  queue on one replica while the other idles. Running `VSEARCH_CONCURRENCY` at about
-  twice the replica count keeps every replica busy.
+  ~1 week on 7, ~3 days on 16. That is a per-replica rate, so it holds only while
+  enough requests are in flight to keep every replica busy — see below.
+
+### Sizing `VSEARCH_CONCURRENCY`
+
+`VSEARCH_CONCURRENCY` caps the vsearch requests in flight from **one process**: one
+service pod, or one `scripts/backfill.mjs` run. What matters to vsearch is the total
+from everything sending to it:
+
+    C = (service pods × VSEARCH_CONCURRENCY) + (backfill VSEARCH_CONCURRENCY, if one is running)
+
+The chart runs `replicaCount: 2` service pods, so the default of 4 already means C = 8.
+
+Each vsearch replica serves one request at a time, so C is a hard ceiling on how many
+replicas can be working. The Service places each connection on a replica at random, so
+the usual number is lower. Expected busy replicas is `n × (1 − (1 − 1/n)^C)` for `n`
+replicas:
+
+| vsearch replicas | C = 4 (one backfill, default) | C = 8 (2 service pods, default) | C = 3 × replicas |
+|---|---|---|---|
+| 2 | 1.9 busy (94%) | 2.0 (100%) | 2.0 (98%, C=6) |
+| 6 | 3.1 (**52%**) | 4.6 (77%) | 5.8 (96%, C=18) |
+| 12 | 3.5 (**29%**) | 6.0 (50%) | 11.5 (96%, C=36) |
+
+Aim for **C ≈ 3 × vsearch replicas**, so per process
+`VSEARCH_CONCURRENCY ≈ 3 × replicas ÷ processes`: 3 × replicas for a backfill on its own,
+1.5 × replicas on each of 2 service pods. The effective value is printed at startup by
+both the service and `scripts/backfill.mjs`.
+
+**Placement is per connection, not per request.** undici keeps connections alive, so a
+process that keeps its queue full keeps the same connections, and so the same replicas,
+for as long as it runs. The table is the average over placements; a single long backfill
+may land below it and stay there. Check per-replica CPU after a backfill starts; restarting
+it gives a new placement.
+
+**Don't oversubscribe past the timeout.** A busy replica queues a request rather than
+rejecting it, but timeouts are not retried and vsearch keeps working on a request the
+client abandoned. A request at the back of a replica's queue waits for every request
+ahead of it, and with per-connection placement the busiest replica can hold 2–3× the
+average queue of `C ÷ n`. Keep
+
+    3 × (C ÷ n) × seconds per request  <  VSEARCH_TIMEOUT_MS
+
+where seconds per request ≈ `VSEARCH_BATCH_SIZE` ÷ 6 (about 4 s at the default 25). At
+C = 3 × replicas with batch 25 that is about 3 × 3 × 4 s = 36 s, well inside the default
+120 s; at batch 200 it is about 5 minutes, so raise `VSEARCH_TIMEOUT_MS` or lower C.
+
+**In the backfill, `--parallel` and `--chunk` can also be the limit.** Each open chunk
+sends one request per `VSEARCH_BATCH_SIZE` cache misses, so the backfill has at most
+`--parallel × ceil(misses per chunk ÷ VSEARCH_BATCH_SIZE)` requests in flight. With the
+defaults (4 × 1000 ÷ 25 = 160) that is above any sensible `VSEARCH_CONCURRENCY` on a cold
+cache. When most of the input is already cached, a 1000-line chunk may have only a few
+misses, and then raising `--parallel` does raise throughput. The script prints a note when
+`--parallel` × `--chunk` cannot reach `VSEARCH_CONCURRENCY` even on a cold cache. Batch
+size itself was measured flat from 25 to 200.
 
 ## Testing
 

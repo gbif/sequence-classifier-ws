@@ -180,6 +180,27 @@ const isRetryable = err =>
 const dispatcher = new Agent({ headersTimeout: 0, bodyTimeout: 0 });
 const defaultFetch = (url, init) => undiciFetch(url, { ...init, dispatcher });
 
+const envInt = (env, name, fallback) => {
+  const n = parseInt(env[name]);
+  return Number.isNaN(n) ? fallback : n;
+};
+
+/**
+ * Client options from the VSEARCH_* environment variables, with the defaults
+ * the service and scripts/backfill.mjs share. Pass the result to
+ * createVsearchClient, and log it so the effective values are visible.
+ */
+export function vsearchConfigFromEnv(env = process.env) {
+  return {
+    url:         env.VSEARCH_URL || 'http://127.0.0.1:8000/search/batch',
+    timeoutMs:   envInt(env, 'VSEARCH_TIMEOUT_MS', 120_000),
+    batchSize:   envInt(env, 'VSEARCH_BATCH_SIZE', 25),
+    concurrency: envInt(env, 'VSEARCH_CONCURRENCY', 4),
+    retries:     envInt(env, 'VSEARCH_RETRIES', 2),
+    logQueue:    env.VSEARCH_QUEUE_LOG === 'true',
+  };
+}
+
 /**
  * @param {object} opts
  * @param {string} opts.url          vsearch batch endpoint
